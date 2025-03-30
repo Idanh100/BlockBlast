@@ -72,28 +72,32 @@ class State:
         self.lines_cleared = 0
         self.game_over = False
         
-        # Create initial blocks
+        # Create initial blocks with adjusted positioning
         self.available_blocks = self.generate_initial_blocks()
     
     def generate_initial_blocks(self):
         """Generate the initial set of blocks for a new game."""
         blocks = []
         
+        # Set a position for the "Available Blocks" label (for reference)
+        label_y = 50  # Assume this is the Y position of the label text
+        block_y_start = label_y + 50  # Start below the label, adjusting for spacing
+        
         # Red block (likely a square block from the description)
         red_shape = [[1, 1, 1], 
                      [1, 1, 1], 
                      [1, 1, 1]]
-        red_block = Block(red_shape, self.RED, (60, 600))
+        red_block = Block(red_shape, self.RED, (60, block_y_start))  # Placed below the label
         blocks.append(red_block)
         
         # Yellow block (likely a horizontal line)
         yellow_shape = [[1, 1, 1, 1, 1]]
-        yellow_block = Block(yellow_shape, self.YELLOW, (170, 600))
+        yellow_block = Block(yellow_shape, self.YELLOW, (170, block_y_start))  # Placed below the label
         blocks.append(yellow_block)
         
         # Orange block (another horizontal line, could be different in size)
         orange_shape = [[1, 1, 1, 1, 1]]
-        orange_block = Block(orange_shape, self.ORANGE, (280, 600))
+        orange_block = Block(orange_shape, self.ORANGE, (280, block_y_start))  # Placed below the label
         blocks.append(orange_block)
         
         return blocks

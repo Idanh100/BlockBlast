@@ -163,9 +163,9 @@ class Graphics:
             for x in range(block.width):
                 if block.shape[y][x] == 1:
                     rect = pygame.Rect(
-                        block.rect.x + x * self.GRID_SIZE + self.GRID_MARGIN,
-                        block.rect.y + y * self.GRID_SIZE + self.GRID_MARGIN,
+                        self.GRID_ORIGIN_X + block.rect.x + x * self.GRID_SIZE + self.GRID_MARGIN,
+                        self.GRID_ORIGIN_Y + block.rect.y + y * self.GRID_SIZE + self.GRID_MARGIN,
                         self.GRID_SIZE - 2 * self.GRID_MARGIN,
                         self.GRID_SIZE - 2 * self.GRID_MARGIN
                     )
-                    pygame.draw.rect
+                    pygame.draw.rect(self.screen, block.color, rect, border_radius=5)
