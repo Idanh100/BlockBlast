@@ -1,3 +1,4 @@
+Graphics.py
 import pygame
 from pygame.locals import *
 
@@ -42,28 +43,10 @@ class Graphics:
         self.screen.blit(title, (self.width // 2 - title.get_width() // 2, 100))
         
         # Draw start button
-        start_button = pygame.Rect(
-            self.width // 2 - self.button_width // 2,
-            300,
-            self.button_width,
-            self.button_height
-        )
-        pygame.draw.rect(self.screen, self.LIGHT_BLUE, start_button, border_radius=10)
-        start_text = self.medium_font.render("Start Game", True, self.WHITE)
-        self.screen.blit(start_text, (start_button.centerx - start_text.get_width() // 2, 
-                                      start_button.centery - start_text.get_height() // 2))
+        start_button = self._draw_button(self.width // 2, 300, "Start Game", self.LIGHT_BLUE)
         
         # Draw quit button
-        quit_button = pygame.Rect(
-            self.width // 2 - self.button_width // 2,
-            380,
-            self.button_width,
-            self.button_height
-        )
-        pygame.draw.rect(self.screen, self.RED, quit_button, border_radius=10)
-        quit_text = self.medium_font.render("Quit", True, self.WHITE)
-        self.screen.blit(quit_text, (quit_button.centerx - quit_text.get_width() // 2, 
-                                    quit_button.centery - quit_text.get_height() // 2))
+        quit_button = self._draw_button(self.width // 2, 380, "Quit", self.RED)
         
         return {
             "start_button": start_button,
@@ -83,6 +66,35 @@ class Graphics:
         pygame.draw.circle(self.screen, self.LIGHT_BLUE, settings_icon.center, 20)
         
         # Draw grid
+        self._draw_grid(state)
+        
+        # Draw available blocks
+        block_ui_elements = {}
+        for i, block in enumerate(state.available_blocks):
+            self._draw_block(block)
+            block_ui_elements[f"block_{i}"] = block.rect
+        
+        return {
+            "settings_button": settings_icon,
+            "blocks": block_ui_elements,
+            "grid_origin": (self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y),
+            "grid_size": self.GRID_SIZE
+        }
+    
+    def _draw_button(self, x, y, text, color):
+        button_rect = pygame.Rect(
+            x - self.button_width // 2,
+            y,
+            self.button_width,
+            self.button_height
+        )
+        pygame.draw.rect(self.screen, color, button_rect, border_radius=10)
+        button_text = self.medium_font.render(text, True, self.WHITE)
+        self.screen.blit(button_text, (button_rect.centerx - button_text.get_width() // 2, 
+                                      button_rect.centery - button_text.get_height() // 2))
+        return button_rect
+    
+    def _draw_grid(self, state):
         grid_width_px = state.grid_width * self.GRID_SIZE
         grid_height_px = state.grid_height * self.GRID_SIZE
         grid_rect = pygame.Rect(self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y, grid_width_px, grid_height_px)
@@ -111,19 +123,6 @@ class Graphics:
                         self.GRID_SIZE - 2 * self.GRID_MARGIN
                     )
                     pygame.draw.rect(self.screen, color, cell_rect, border_radius=5)
-        
-        # Draw available blocks
-        block_ui_elements = {}
-        for i, block in enumerate(state.available_blocks):
-            self._draw_block(block)
-            block_ui_elements[f"block_{i}"] = block.rect
-        
-        return {
-            "settings_button": settings_icon,
-            "blocks": block_ui_elements,
-            "grid_origin": (self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y),
-            "grid_size": self.GRID_SIZE
-        }
     
     def _draw_block(self, block):
         for y in range(block.height):
@@ -168,16 +167,7 @@ class Graphics:
             y_pos += 40
         
         # Draw back to menu button
-        menu_button = pygame.Rect(
-            self.width // 2 - self.button_width // 2,
-            450,
-            self.button_width,
-            self.button_height
-        )
-        pygame.draw.rect(self.screen, self.LIGHT_BLUE, menu_button, border_radius=10)
-        menu_text = self.medium_font.render("Back to Menu", True, self.WHITE)
-        self.screen.blit(menu_text, (menu_button.centerx - menu_text.get_width() // 2, 
-                                   menu_button.centery - menu_text.get_height() // 2))
+        menu_button = self._draw_button(self.width // 2, 450, "Back to Menu", self.LIGHT_BLUE)
         
         return {
             "menu_button": menu_button

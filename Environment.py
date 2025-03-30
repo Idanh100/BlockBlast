@@ -1,3 +1,4 @@
+Environment.py
 class Environment:
     def __init__(self):
         self.grid_origin_x = 40
@@ -41,32 +42,36 @@ class Environment:
             block_index = action['block_index']
             block = state.available_blocks[block_index]
             
-            # Calculate grid position
+            # Get the grid position from the action
             grid_x = action['grid_x']
             grid_y = action['grid_y']
             
-            # Try to place the block
+            # Try to snap the block position to the grid
+            snapped_x, snapped_y = self.grid_to_pixel(grid_x, grid_y)
+            
+            # Check if we can place the block at the snapped grid position
             if block.can_place(state.grid, grid_x, grid_y, state.grid_width, state.grid_height):
-                # Place the block
+                # Place the block in the grid
                 block.place(state.grid, grid_x, grid_y)
                 
-                # Check for line clears
+                # Check if any lines were cleared after placing the block
                 lines_cleared = state.check_clear_lines()
                 
-                # Update score
+                # Update the score
                 if lines_cleared > 0:
                     state.score += lines_cleared
                     reward = lines_cleared * 10  # Reward for clearing lines
                 
-                # Generate new block
+                # Generate a new block for the next round
                 state.available_blocks[block_index] = state.generate_new_block(block_index)
                 
-                # Check if game is over
+                # Check if the game is over (i.e., no valid block placement left)
                 if not state.can_place_any_block():
                     state.game_over = True
                     done = True
-            
+        
         elif action['type'] == 'restart':
+            # Restart the game
             state.reset()
         
         return reward, done
