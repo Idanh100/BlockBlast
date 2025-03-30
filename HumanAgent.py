@@ -1,4 +1,3 @@
-HumanAgent.py
 import pygame
 from pygame.locals import *
 

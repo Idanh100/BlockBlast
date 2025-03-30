@@ -1,4 +1,3 @@
-Environment.py
 class Environment:
     def __init__(self):
         self.grid_origin_x = 40
