@@ -5,30 +5,43 @@ class Block:
     def __init__(self, shape, color, position):
         self.shape = shape
         self.color = color
-        self.width = len(shape[0])  # Width of the block
-        self.height = len(shape)  # Height of the block
+        self.width = len(shape[0])
+        self.height = len(shape)
+        self.dragging = False
         self.rect = pygame.Rect(position[0], position[1], 
                                self.width * 40, 
                                self.height * 40)  # Using 40 as GRID_SIZE
     
     def can_place(self, grid, grid_x, grid_y, grid_width, grid_height):
         """
-        Checks if the block can be placed on the grid at the specified location.
+        Check if block can be placed at the specified grid position.
+        
+        Args:
+            grid: The current game grid
+            grid_x, grid_y: The top-left grid position to try placing the block
+            grid_width, grid_height: The dimensions of the grid
+            
+        Returns:
+            bool: True if the block can be placed, False otherwise
         """
         for y in range(self.height):
             for x in range(self.width):
                 if self.shape[y][x] == 1:
-                    # Check if the block is within grid bounds
-                    if not (0 <= grid_x + x < grid_width and 0 <= grid_y + y < grid_height):
+                    # Check if position is valid (within grid bounds)
+                    if grid_x + x < 0 or grid_x + x >= grid_width or grid_y + y < 0 or grid_y + y >= grid_height:
                         return False
-                    # Check if the target cell is already occupied
+                    # Check if cell is already occupied
                     if grid[grid_y + y][grid_x + x] is not None:
                         return False
         return True
     
     def place(self, grid, grid_x, grid_y):
         """
-        Places the block on the grid by marking occupied cells with the block color.
+        Place the block on the grid at the specified position.
+        
+        Args:
+            grid: The current game grid
+            grid_x, grid_y: The top-left grid position to place the block
         """
         for y in range(self.height):
             for x in range(self.width):
@@ -41,12 +54,13 @@ class State:
         self.reset()
     
     def reset(self):
-        """
-        Initializes or resets the game state.
-        """
+        """Reset the game state to starting conditions."""
+        # Define colors
         self.RED = (220, 70, 70)
         self.YELLOW = (240, 200, 50)
         self.ORANGE = (240, 130, 50)
+        self.GREEN = (100, 200, 100)
+        self.BLUE = (100, 100, 240)
         
         # Grid dimensions
         self.grid_width = 8
@@ -62,125 +76,73 @@ class State:
         self.available_blocks = self.generate_initial_blocks()
     
     def generate_initial_blocks(self):
-        """
-        Generates a list of 3 available blocks to place, each with a random shape and random color.
-        The blocks will be placed in empty slots to avoid overlapping.
-        """
+        """Generate the initial set of blocks for a new game."""
         blocks = []
-
-        # List of available colors
-        colors = [self.RED, self.YELLOW, self.ORANGE]
-
-        # Shapes for different block sizes
-        shapes = [
-            [[1, 1, 1],  # 3x3 block
-            [1, 1, 1], 
-            [1, 1, 1]],
-
-            [[1, 1, 1, 1, 1]],  # 1x5 block
-
-            [[1, 1, 1, 1]],  # 1x4 block
-
-            [[1, 1, 1]],  # 1x3 block
-
-            # Additional Shapes
-            [[1, 0, 0], [1, 1, 1]],  # L-Shape (3x2)
-            [[0, 1, 0], [1, 1, 1]],  # T-Shape (3x2)
-            [[1, 1, 0], [0, 1, 1]],  # Z-Shape (2x3)
-            [[0, 1, 1], [1, 1, 0]],  # S-Shape (2x3)
-            [[1, 1], [1, 1]],  # Square (2x2)
-            [[0, 1, 0], [1, 1, 1], [0, 1, 0]],  # Plus Sign (3x3)
-            [[1], [1], [1], [1], [1]]  # Tall "I" Block (1x5)
-        ]
-
-        # List of already used X positions (in terms of grid placement)
-        used_positions = []  # This will store the starting X positions where blocks are placed
-
-        # Generate 3 initial blocks
-        for i in range(3):
-            # Select a random shape and a random color
-            shape = random.choice(shapes)
-            color = random.choice(colors)
-
-            # Determine the width of the block (width of the shape multiplied by grid size)
-            block_width = len(shape[0]) * 40  # 40 is the GRID_SIZE (adjust as needed)
-
-            # Find an empty spot to place the new block
-            # We'll ensure the new block doesn't overlap by checking the used X positions
-            x_position = 60  # Starting X position for the first block
-
-            # Check for the next available empty position
-            while x_position in used_positions:
-                x_position += (block_width + 20)  # Move over to the next empty slot
-
-            # Add the new position to the list of used positions
-            used_positions.append(x_position)
-
-            # Set the Y position (all blocks spawn at the same Y position for simplicity)
-            y_position = 600
-
-            # Create the block and add it to the list
-            block = Block(shape, color, (x_position, y_position))
-            blocks.append(block)
-
+        
+        # Red block (likely a square block from the description)
+        red_shape = [[1, 1, 1], 
+                     [1, 1, 1], 
+                     [1, 1, 1]]
+        red_block = Block(red_shape, self.RED, (60, 600))
+        blocks.append(red_block)
+        
+        # Yellow block (likely a horizontal line)
+        yellow_shape = [[1, 1, 1, 1, 1]]
+        yellow_block = Block(yellow_shape, self.YELLOW, (170, 600))
+        blocks.append(yellow_block)
+        
+        # Orange block (another horizontal line, could be different in size)
+        orange_shape = [[1, 1, 1, 1, 1]]
+        orange_block = Block(orange_shape, self.ORANGE, (280, 600))
+        blocks.append(orange_block)
+        
         return blocks
     
     def generate_new_block(self, index):
         """
-        Generates a new block when an old one is used up or cleared, with a random color for each shape.
+        Generate a new block to replace one that was placed.
+        
+        Args:
+            index: Index of the block to be replaced
+            
+        Returns:
+            Block: A new Block object
         """
-        # List of available colors
-        colors = [self.RED, self.YELLOW, self.ORANGE]
-    
-        # Shapes for different block sizes
-        shapes = [
-            # 3x3 block
-            [[1, 1, 1], 
-             [1, 1, 1], 
-             [1, 1, 1]],
-        
-            # 2x2 block
-            [[1, 1], 
-             [1, 1]], 
-        
-            # 3x2 block
-            [[1, 1, 1], 
-             [1, 1, 1]],
-        
-            # 1x5 block
-            [[1, 1, 1, 1, 1]], 
-        
-            # 1x4 block
-            [[1, 1, 1, 1]], 
-        
-            # 1x3 block
-            [[1, 1, 1]],
-        
-            # Additional Shapes
-            [[1, 0, 0], [1, 1, 1]],  # L-Shape (3x2)
-            [[0, 1, 0], [1, 1, 1]],  # T-Shape (3x2)
-            [[1, 1, 0], [0, 1, 1]],  # Z-Shape (2x3)
-            [[0, 1, 1], [1, 1, 0]],  # S-Shape (2x3)
-            [[1, 1], [1, 1]],  # Square (2x2)
-            [[0, 1, 0], [1, 1, 1], [0, 1, 0]],  # Plus Sign (3x3)
-            [[1], [1], [1], [1], [1]]  # Tall "I" Block (1x5)
-        ]
-    
-        # Select a random shape
-        shape = random.choice(shapes)
-    
-        # Select a random color from the available colors
-        color = random.choice(colors)
-    
-        # Determine the starting position based on the block size (you can adjust this)
-        starting_position = (60, 600)  # You may need to adjust this based on the layout
-    
-        # Return a new block with a random shape and color
-        return Block(shape, color, starting_position)
+        # More block variety for different slots
+        if index == 0:  # Red block slot - larger blocks
+            shapes = [
+                [[1, 1, 1], [1, 1, 1], [1, 1, 1]],  # 3x3
+                [[1, 1], [1, 1]],  # 2x2
+                [[1, 1, 1], [1, 1, 1]],  # 3x2
+                [[1, 1], [1, 1], [1, 1]]  # 2x3
+            ]
+            shape = random.choice(shapes)
+            return Block(shape, self.RED, (60, 600))
+        elif index == 1:  # Yellow block slot - horizontal lines
+            shapes = [
+                [[1, 1, 1, 1, 1]],  # 1x5
+                [[1, 1, 1, 1]],  # 1x4
+                [[1, 1, 1]],  # 1x3
+                [[1, 1]]  # 1x2
+            ]
+            shape = random.choice(shapes)
+            return Block(shape, self.YELLOW, (170, 600))
+        else:  # Orange block slot - vertical lines and L-shapes
+            shapes = [
+                [[1], [1], [1], [1], [1]],  # 5x1
+                [[1], [1], [1], [1]],  # 4x1
+                [[1], [1], [1]],  # 3x1
+                [[1, 1], [1, 0]]  # L-shape
+            ]
+            shape = random.choice(shapes)
+            return Block(shape, self.ORANGE, (280, 600))
     
     def check_clear_lines(self):
         """
-        Clears rows or columns that are completely filled with blocks.
+        Check and clear completed rows and columns.
+        
+        Returns:
+            tuple: (lines_cleared, score_gained)
         """
         lines_cleared = 0
         
@@ -208,6 +170,29 @@ class State:
             for y in range(self.grid_height):
                 self.grid[y][x] = None
         
+        # Calculate score - add points based on number of lines cleared at once
+        # This creates a bonus for clearing multiple lines simultaneously
+        score_gain = 0
+        if lines_cleared > 0:
+            # Base score + exponential bonus for multiple lines
+            score_gain = lines_cleared * 10 + (lines_cleared - 1) * 5
+            self.score += score_gain
+        
         # Update total lines cleared
         self.lines_cleared += lines_cleared
         
+        return lines_cleared, score_gain
+    
+    def can_place_any_block(self):
+        """
+        Check if any available block can be placed anywhere on the grid.
+        
+        Returns:
+            bool: True if at least one block can be placed, False otherwise
+        """
+        for block in self.available_blocks:
+            for y in range(self.grid_height - block.height + 1):
+                for x in range(self.grid_width - block.width + 1):
+                    if block.can_place(self.grid, x, y, self.grid_width, self.grid_height):
+                        return True
+        return False

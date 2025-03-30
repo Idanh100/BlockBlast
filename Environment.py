@@ -7,6 +7,12 @@ class Environment:
     def get_observation(self, state):
         """
         Returns the current state of the game as an observation.
+        
+        Args:
+            state: The current State object
+            
+        Returns:
+            dict: A dictionary containing the current game state
         """
         return {
             'grid': state.grid,
@@ -21,7 +27,7 @@ class Environment:
         Apply the action to the game state and return the reward and whether the game is done.
         
         Args:
-            state (GameState): The current game state
+            state (State): The current game state
             action (dict): The action to apply
                 - type: The type of action ('place_block', 'restart', 'none')
                 - block_index: The index of the block to place (if type is 'place_block')
@@ -41,48 +47,58 @@ class Environment:
             block_index = action['block_index']
             block = state.available_blocks[block_index]
             
-            # Get the grid position from the action
+            # Calculate grid position
             grid_x = action['grid_x']
             grid_y = action['grid_y']
             
-            # Try to snap the block position to the grid
-            snapped_x, snapped_y = self.grid_to_pixel(grid_x, grid_y)
-            
-            # Check if we can place the block at the snapped grid position
+            # Try to place the block
             if block.can_place(state.grid, grid_x, grid_y, state.grid_width, state.grid_height):
-                # Place the block in the grid
+                # Place the block
                 block.place(state.grid, grid_x, grid_y)
                 
-                # Check if any lines were cleared after placing the block
-                lines_cleared = state.check_clear_lines()
+                # Check for line clears and get score
+                lines_cleared, score_gained = state.check_clear_lines()
                 
-                # Update the score
-                if lines_cleared > 0:
-                    state.score += lines_cleared
-                    reward = lines_cleared * 10  # Reward for clearing lines
+                # Set reward
+                reward = score_gained
                 
-                # Generate a new block for the next round
+                # Generate new block
                 state.available_blocks[block_index] = state.generate_new_block(block_index)
                 
-                # Check if the game is over (i.e., no valid block placement left)
+                # Check if game is over
                 if not state.can_place_any_block():
                     state.game_over = True
                     done = True
         
         elif action['type'] == 'restart':
-            # Restart the game
             state.reset()
         
         return reward, done
     
     def grid_to_pixel(self, grid_x, grid_y):
-        """Convert grid coordinates to pixel coordinates."""
+        """
+        Convert grid coordinates to pixel coordinates.
+        
+        Args:
+            grid_x, grid_y: The grid coordinates
+            
+        Returns:
+            tuple: (pixel_x, pixel_y) pixel coordinates
+        """
         pixel_x = self.grid_origin_x + grid_x * self.grid_size
         pixel_y = self.grid_origin_y + grid_y * self.grid_size
         return pixel_x, pixel_y
     
     def pixel_to_grid(self, pixel_x, pixel_y):
-        """Convert pixel coordinates to grid coordinates."""
+        """
+        Convert pixel coordinates to grid coordinates.
+        
+        Args:
+            pixel_x, pixel_y: The pixel coordinates
+            
+        Returns:
+            tuple: (grid_x, grid_y) grid coordinates
+        """
         grid_x = round((pixel_x - self.grid_origin_x) / self.grid_size)
         grid_y = round((pixel_y - self.grid_origin_y) / self.grid_size)
         return grid_x, grid_y

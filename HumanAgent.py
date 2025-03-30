@@ -113,12 +113,34 @@ class HumanAgent:
         return action
     
     def _calculate_grid_position(self, mouse_pos, ui_elements):
-        """Calculate the grid position from mouse position."""
+        """
+        Calculate the grid position from mouse position, adjusted for block size.
+        
+        Args:
+            mouse_pos: The current mouse position
+            ui_elements: Dictionary of UI elements
+            
+        Returns:
+            tuple: (grid_x, grid_y) coordinates for block placement
+        """
         mouse_x, mouse_y = mouse_pos
         grid_origin_x, grid_origin_y = ui_elements["grid_origin"]
         grid_size = ui_elements["grid_size"]
         
-        grid_x = round((mouse_x - grid_origin_x) / grid_size)
-        grid_y = round((mouse_y - grid_origin_y) / grid_size)
+        # Calculate top-left corner of block placement
+        if self.dragging_block:
+            # Adjust by half the width and height of the block to center placement
+            width_offset = (self.dragging_block.width * grid_size) / 2
+            height_offset = (self.dragging_block.height * grid_size) / 2
+            
+            grid_x = int((mouse_x - grid_origin_x - width_offset) / grid_size) + self.dragging_block.width // 2
+            grid_y = int((mouse_y - grid_origin_y - height_offset) / grid_size) + self.dragging_block.height // 2
+            
+            # Adjust for block size to ensure correct top-left placement
+            grid_x -= self.dragging_block.width // 2
+            grid_y -= self.dragging_block.height // 2
+        else:
+            grid_x = int((mouse_x - grid_origin_x) / grid_size)
+            grid_y = int((mouse_y - grid_origin_y) / grid_size)
         
         return grid_x, grid_y
