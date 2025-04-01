@@ -116,7 +116,12 @@ class Game:
         observation = self.environment.get_observation(self.state)
         
         # Get action from human agent
-        action = self.human_agent.get_action(observation, self.graphics.draw_game(self.state))
+        # Pass highlighted cells, highlight color, and valid_placement to draw_game
+        action = self.human_agent.get_action(observation, self.graphics.draw_game(
+            self.state, 
+            self.human_agent.highlighted_cells, 
+            self.human_agent.highlight_color if self.human_agent.valid_placement else None
+        ))
         
         # Apply action to environment
         reward, done = self.environment.step(self.state, action)

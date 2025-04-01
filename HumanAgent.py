@@ -7,7 +7,10 @@ class HumanAgent:
         self.dragging_block_index = None
         self.offset_x = 0
         self.offset_y = 0
-    
+        self.highlighted_cells = []  # To store the highlighted cells
+        self.highlight_color = None  # To store the color for highlighting
+        self.valid_placement = False  # Flag to track if current placement is valid
+
     def get_menu_action(self, ui_elements):
         """
         Get action from the menu screen.
@@ -65,6 +68,11 @@ class HumanAgent:
             'type': 'none'
         }
         
+        # Initialize highlighted cells to empty list each time a new action is taken
+        self.highlighted_cells = []
+        self.highlight_color = None
+        self.valid_placement = False
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -90,31 +98,56 @@ class HumanAgent:
                 # Calculate grid position
                 grid_x, grid_y = self._calculate_grid_position(event.pos, ui_elements)
                 
-                # Create place block action
-                action = {
-                    'type': 'place_block',
-                    'block_index': self.dragging_block_index,
-                    'grid_x': grid_x,
-                    'grid_y': grid_y
-                }
+                # Create place block action only if placement is valid
+                if self.valid_placement:
+                    action = {
+                        'type': 'place_block',
+                        'block_index': self.dragging_block_index,
+                        'grid_x': grid_x,
+                        'grid_y': grid_y
+                    }
                 
                 # Reset dragging state
                 self.dragging_block.rect.x = ui_elements["blocks"][f"block_{self.dragging_block_index}"].x
                 self.dragging_block.rect.y = ui_elements["blocks"][f"block_{self.dragging_block_index}"].y
                 self.dragging_block = None
                 self.dragging_block_index = None
+                self.highlighted_cells = []  # Clear highlighted cells when dropping
+                self.highlight_color = None
+                self.valid_placement = False
             
             elif event.type == MOUSEMOTION and self.dragging_block:
                 # Update block position while dragging
                 mouse_x, mouse_y = event.pos
                 self.dragging_block.rect.x = mouse_x + self.offset_x
                 self.dragging_block.rect.y = mouse_y + self.offset_y
+                
+                # Calculate potential grid position
+                grid_x, grid_y = self._calculate_grid_position((mouse_x, mouse_y), ui_elements)
+                
+                # Check if placement is valid before highlighting
+                self.valid_placement = self.dragging_block.can_place(
+                    observation['grid'], 
+                    grid_x, 
+                    grid_y, 
+                    len(observation['grid'][0]), 
+                    len(observation['grid'])
+                )
+                
+                # Only highlight cells if placement is valid
+                if self.valid_placement:
+                    self.highlighted_cells = self._get_highlighted_cells(mouse_x, mouse_y, ui_elements)
+                    self.highlight_color = self.dragging_block.color
+                else:
+                    self.highlighted_cells = []
+                    self.highlight_color = None
         
         return action
-    
+
     def _calculate_grid_position(self, mouse_pos, ui_elements):
         """
-        Calculate the grid position from mouse position, adjusted for block size.
+        Calculate the grid position from mouse position, taking into account
+        where the user grabbed the block.
         
         Args:
             mouse_pos: The current mouse position
@@ -127,20 +160,49 @@ class HumanAgent:
         grid_origin_x, grid_origin_y = ui_elements["grid_origin"]
         grid_size = ui_elements["grid_size"]
         
-        # Calculate top-left corner of block placement
         if self.dragging_block:
-            # Adjust by half the width and height of the block to center placement
-            width_offset = (self.dragging_block.width * grid_size) / 2
-            height_offset = (self.dragging_block.height * grid_size) / 2
+            # Calculate position based on the drag offset (where user grabbed the block)
+            # This creates a more natural placement where blocks appear under the cursor
             
-            grid_x = int((mouse_x - grid_origin_x - width_offset) / grid_size) + self.dragging_block.width // 2
-            grid_y = int((mouse_y - grid_origin_y - height_offset) / grid_size) + self.dragging_block.height // 2
+            # Calculate the top-left corner of where the block would be
+            block_top_left_x = mouse_x + self.offset_x
+            block_top_left_y = mouse_y + self.offset_y
             
-            # Adjust for block size to ensure correct top-left placement
-            grid_x -= self.dragging_block.width // 2
-            grid_y -= self.dragging_block.height // 2
+            # Convert to grid coordinates
+            grid_x = int((block_top_left_x - grid_origin_x) / grid_size)
+            grid_y = int((block_top_left_y - grid_origin_y) / grid_size)
+            
+            return grid_x, grid_y
         else:
+            # If not dragging, just convert mouse position to grid coordinates
             grid_x = int((mouse_x - grid_origin_x) / grid_size)
             grid_y = int((mouse_y - grid_origin_y) / grid_size)
+            
+            return grid_x, grid_y
+
+    def _get_highlighted_cells(self, mouse_x, mouse_y, ui_elements):
+        """
+        Calculate all grid cells that should be highlighted when dragging the block.
         
-        return grid_x, grid_y
+        Args:
+            mouse_x: The x-coordinate of the mouse
+            mouse_y: The y-coordinate of the mouse
+            ui_elements: Dictionary of UI elements
+            
+        Returns:
+            list: A list of tuples representing the highlighted grid positions
+        """
+        if not self.dragging_block:
+            return []
+            
+        # Get top-left grid position for the block using the same logic as _calculate_grid_position
+        grid_x, grid_y = self._calculate_grid_position((mouse_x, mouse_y), ui_elements)
+        
+        # Create a list of cells covered by the block
+        cells = []
+        for y in range(self.dragging_block.height):
+            for x in range(self.dragging_block.width):
+                if self.dragging_block.shape[y][x] == 1:
+                    cells.append((grid_x + x, grid_y + y))
+        
+        return cells

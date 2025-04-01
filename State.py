@@ -79,25 +79,26 @@ class State:
         """Generate the initial set of blocks for a new game."""
         blocks = []
         
-        # Set a position for the "Available Blocks" label (for reference)
-        label_y = 50  # Assume this is the Y position of the label text
-        block_y_start = label_y + 50  # Start below the label, adjusting for spacing
+        # Position for blocks below "Available Blocks" text
+        # These positions are for the original blocks - no grid offsets needed here
+        # The blocks should appear at their actual screen positions
+        blocks_y = 580  # Position below the "Available Blocks" text
         
         # Red block (likely a square block from the description)
         red_shape = [[1, 1, 1], 
                      [1, 1, 1], 
                      [1, 1, 1]]
-        red_block = Block(red_shape, self.RED, (60, block_y_start))  # Placed below the label
+        red_block = Block(red_shape, self.RED, (20, blocks_y))
         blocks.append(red_block)
         
         # Yellow block (likely a horizontal line)
         yellow_shape = [[1, 1, 1, 1, 1]]
-        yellow_block = Block(yellow_shape, self.YELLOW, (170, block_y_start))  # Placed below the label
+        yellow_block = Block(yellow_shape, self.YELLOW, (160, blocks_y))
         blocks.append(yellow_block)
         
         # Orange block (another horizontal line, could be different in size)
         orange_shape = [[1, 1, 1, 1, 1]]
-        orange_block = Block(orange_shape, self.ORANGE, (280, block_y_start))  # Placed below the label
+        orange_block = Block(orange_shape, self.ORANGE, (280, blocks_y))
         blocks.append(orange_block)
         
         return blocks
@@ -112,6 +113,9 @@ class State:
         Returns:
             Block: A new Block object
         """
+        # Position for new blocks - below "Available Blocks" text
+        blocks_y = 580
+        
         # More block variety for different slots
         if index == 0:  # Red block slot - larger blocks
             shapes = [
@@ -121,7 +125,7 @@ class State:
                 [[1, 1], [1, 1], [1, 1]]  # 2x3
             ]
             shape = random.choice(shapes)
-            return Block(shape, self.RED, (60, 600))
+            return Block(shape, self.RED, (20, blocks_y))
         elif index == 1:  # Yellow block slot - horizontal lines
             shapes = [
                 [[1, 1, 1, 1, 1]],  # 1x5
@@ -130,7 +134,7 @@ class State:
                 [[1, 1]]  # 1x2
             ]
             shape = random.choice(shapes)
-            return Block(shape, self.YELLOW, (170, 600))
+            return Block(shape, self.YELLOW, (160, blocks_y))
         else:  # Orange block slot - vertical lines and L-shapes
             shapes = [
                 [[1], [1], [1], [1], [1]],  # 5x1
@@ -139,7 +143,7 @@ class State:
                 [[1, 1], [1, 0]]  # L-shape
             ]
             shape = random.choice(shapes)
-            return Block(shape, self.ORANGE, (280, 600))
+            return Block(shape, self.ORANGE, (280, blocks_y))
     
     def check_clear_lines(self):
         """
