@@ -74,6 +74,9 @@ class State:
         
         # Create initial blocks with adjusted positioning
         self.available_blocks = self.generate_initial_blocks()
+        
+        # Track placed blocks for regeneration
+        self.placed_blocks_count = 0
     
     def generate_initial_blocks(self):
         """Generate the initial set of blocks for a new game."""
@@ -103,47 +106,74 @@ class State:
         
         return blocks
     
-    def generate_new_block(self, index):
+    def generate_new_blocks(self):
         """
-        Generate a new block to replace one that was placed.
+        Generate a new set of blocks to replace all that were placed.
         
-        Args:
-            index: Index of the block to be replaced
-            
         Returns:
-            Block: A new Block object
+            List of new Block objects
         """
         # Position for new blocks - below "Available Blocks" text
         blocks_y = 580
+        blocks = []
         
-        # More block variety for different slots
-        if index == 0:  # Red block slot - larger blocks
-            shapes = [
-                [[1, 1, 1], [1, 1, 1], [1, 1, 1]],  # 3x3
-                [[1, 1], [1, 1]],  # 2x2
-                [[1, 1, 1], [1, 1, 1]],  # 3x2
-                [[1, 1], [1, 1], [1, 1]]  # 2x3
-            ]
-            shape = random.choice(shapes)
-            return Block(shape, self.RED, (20, blocks_y))
-        elif index == 1:  # Yellow block slot - horizontal lines
-            shapes = [
-                [[1, 1, 1, 1, 1]],  # 1x5
-                [[1, 1, 1, 1]],  # 1x4
-                [[1, 1, 1]],  # 1x3
-                [[1, 1]]  # 1x2
-            ]
-            shape = random.choice(shapes)
-            return Block(shape, self.YELLOW, (160, blocks_y))
-        else:  # Orange block slot - vertical lines and L-shapes
-            shapes = [
-                [[1], [1], [1], [1], [1]],  # 5x1
-                [[1], [1], [1], [1]],  # 4x1
-                [[1], [1], [1]],  # 3x1
-                [[1, 1], [1, 0]]  # L-shape
-            ]
-            shape = random.choice(shapes)
-            return Block(shape, self.ORANGE, (280, blocks_y))
+        # Generate red block
+        red_shapes = [
+            [[1, 1, 1], [1, 1, 1], [1, 1, 1]],  # 3x3
+            [[1, 1], [1, 1]],  # 2x2
+            [[1, 1, 1], [1, 1, 1]],  # 3x2
+            [[1, 1], [1, 1], [1, 1]]  # 2x3
+        ]
+        red_shape = random.choice(red_shapes)
+        red_block = Block(red_shape, self.RED, (20, blocks_y))
+        blocks.append(red_block)
+        
+        # Generate yellow block
+        yellow_shapes = [
+            [[1, 1, 1, 1, 1]],  # 1x5
+            [[1, 1, 1, 1]],  # 1x4
+            [[1, 1, 1]],  # 1x3
+            [[1, 1]]  # 1x2
+        ]
+        yellow_shape = random.choice(yellow_shapes)
+        yellow_block = Block(yellow_shape, self.YELLOW, (160, blocks_y))
+        blocks.append(yellow_block)
+        
+        # Generate orange block
+        orange_shapes = [
+            [[1], [1], [1], [1], [1]],  # 5x1
+            [[1], [1], [1], [1]],  # 4x1
+            [[1], [1], [1]],  # 3x1
+            [[1, 1], [1, 0]]  # L-shape
+        ]
+        orange_shape = random.choice(orange_shapes)
+        orange_block = Block(orange_shape, self.ORANGE, (280, blocks_y))
+        blocks.append(orange_block)
+        
+        return blocks
+    
+    def mark_block_as_placed(self, block_index):
+        """
+        Mark a block as placed and handle block regeneration logic.
+        
+        Args:
+            block_index: Index of the block that was placed
+            
+        Returns:
+            bool: True if all blocks were placed and new ones were generated
+        """
+        # Set the block to None to indicate it's been placed
+        self.available_blocks[block_index] = None
+        self.placed_blocks_count += 1
+        
+        # Check if all blocks have been placed
+        if self.placed_blocks_count >= 3:
+            # Generate new blocks
+            self.available_blocks = self.generate_new_blocks()
+            self.placed_blocks_count = 0
+            return True
+        
+        return False
     
     def check_clear_lines(self):
         """
@@ -199,6 +229,10 @@ class State:
             bool: True if at least one block can be placed, False otherwise
         """
         for block in self.available_blocks:
+            # Skip blocks that have been placed (set to None)
+            if block is None:
+                continue
+                
             for y in range(self.grid_height - block.height + 1):
                 for x in range(self.grid_width - block.width + 1):
                     if block.can_place(self.grid, x, y, self.grid_width, self.grid_height):

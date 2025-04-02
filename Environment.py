@@ -47,28 +47,30 @@ class Environment:
             block_index = action['block_index']
             block = state.available_blocks[block_index]
             
-            # Calculate grid position
-            grid_x = action['grid_x']
-            grid_y = action['grid_y']
-            
-            # Try to place the block
-            if block.can_place(state.grid, grid_x, grid_y, state.grid_width, state.grid_height):
-                # Place the block
-                block.place(state.grid, grid_x, grid_y)
+            # Make sure block is not already placed
+            if block is not None:
+                # Calculate grid position
+                grid_x = action['grid_x']
+                grid_y = action['grid_y']
                 
-                # Check for line clears and get score
-                lines_cleared, score_gained = state.check_clear_lines()
-                
-                # Set reward
-                reward = score_gained
-                
-                # Generate new block
-                state.available_blocks[block_index] = state.generate_new_block(block_index)
-                
-                # Check if game is over
-                if not state.can_place_any_block():
-                    state.game_over = True
-                    done = True
+                # Try to place the block
+                if block.can_place(state.grid, grid_x, grid_y, state.grid_width, state.grid_height):
+                    # Place the block
+                    block.place(state.grid, grid_x, grid_y)
+                    
+                    # Check for line clears and get score
+                    lines_cleared, score_gained = state.check_clear_lines()
+                    
+                    # Set reward
+                    reward = score_gained
+                    
+                    # Mark block as placed and check if all blocks are placed
+                    state.mark_block_as_placed(block_index)
+                    
+                    # Check if game is over
+                    if not state.can_place_any_block():
+                        state.game_over = True
+                        done = True
         
         elif action['type'] == 'restart':
             state.reset()

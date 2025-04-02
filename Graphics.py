@@ -164,9 +164,11 @@ class Graphics:
         # Draw available blocks
         block_ui_elements = {}
         for i, block in enumerate(state.available_blocks):
-            # Draw blocks at their actual screen positions, not adjusted by grid
-            self._draw_block_at_position(block)
-            block_ui_elements[f"block_{i}"] = block.rect
+            # Only draw blocks that haven't been placed (not None)
+            if block is not None:
+                # Draw blocks at their actual screen positions, not adjusted by grid
+                self._draw_block_at_position(block)
+                block_ui_elements[f"block_{i}"] = block.rect
         
         return {
             "settings_button": settings_icon,
