@@ -12,6 +12,8 @@ class HumanAgent:
         self.valid_placement = False  # Flag to track if current placement is valid
         self.last_valid_position = None  # Store the last valid grid position
         self.snap_threshold = 15  # Distance in pixels to snap to grid
+        self.complete_rows = []  # Rows that will be completed
+        self.complete_cols = []  # Columns that will be completed
 
     def get_menu_action(self, ui_elements):
         """
@@ -76,6 +78,8 @@ class HumanAgent:
             self.highlight_color = None
             self.valid_placement = False
             self.last_valid_position = None
+            self.complete_rows = []
+            self.complete_cols = []
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -129,6 +133,8 @@ class HumanAgent:
                 self.highlight_color = None
                 self.valid_placement = False
                 self.last_valid_position = None
+                self.complete_rows = []
+                self.complete_cols = []
             
             elif event.type == MOUSEMOTION and self.dragging_block:
                 # Update block position while dragging
@@ -165,6 +171,9 @@ class HumanAgent:
             self.last_valid_position = (exact_grid_x, exact_grid_y)
             self.highlighted_cells = self._get_highlighted_cells_for_position(exact_grid_x, exact_grid_y)
             self.highlight_color = self.dragging_block.color
+            
+            # Check for potential line completions
+            self._check_potential_line_completions(exact_grid_x, exact_grid_y, observation)
             return
             
         # If not valid, search in a small area around the cursor for valid positions
@@ -193,6 +202,9 @@ class HumanAgent:
                         self.last_valid_position = (test_grid_x, test_grid_y)
                         self.highlighted_cells = self._get_highlighted_cells_for_position(test_grid_x, test_grid_y)
                         self.highlight_color = self.dragging_block.color
+                        
+                        # Check for potential line completions
+                        self._check_potential_line_completions(test_grid_x, test_grid_y, observation)
                         return
         
         # If we get here, no valid position was found nearby
@@ -200,6 +212,45 @@ class HumanAgent:
         self.highlighted_cells = []
         self.highlight_color = None
         self.last_valid_position = None
+        self.complete_rows = []
+        self.complete_cols = []
+
+    def _check_potential_line_completions(self, grid_x, grid_y, observation):
+        """
+        Check if placing the current block at the given position would complete any rows or columns.
+        
+        Args:
+            grid_x, grid_y: Grid position to check
+            observation: Current game state
+        """
+        if not self.dragging_block:
+            return
+        
+        grid = observation['grid']
+        grid_width = len(grid[0])
+        grid_height = len(grid)
+        
+        # Create a temporary grid with the block placed
+        temp_grid = [row[:] for row in grid]  # Deep copy
+        
+        # Place the block in the temporary grid
+        for y in range(self.dragging_block.height):
+            for x in range(self.dragging_block.width):
+                if self.dragging_block.shape[y][x] == 1:
+                    if 0 <= grid_y + y < grid_height and 0 <= grid_x + x < grid_width:
+                        temp_grid[grid_y + y][grid_x + x] = self.dragging_block.color
+        
+        # Check rows that would be completed
+        self.complete_rows = []
+        for y in range(grid_height):
+            if all(temp_grid[y][x] is not None for x in range(grid_width)):
+                self.complete_rows.append(y)
+        
+        # Check columns that would be completed
+        self.complete_cols = []
+        for x in range(grid_width):
+            if all(temp_grid[y][x] is not None for y in range(grid_height)):
+                self.complete_cols.append(x)
 
     def _check_valid_placement(self, grid_x, grid_y, observation):
         """

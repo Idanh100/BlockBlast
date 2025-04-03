@@ -19,6 +19,8 @@ class Graphics:
         self.ORANGE = (240, 130, 50)
         self.HIGHLIGHT_COLOR = (100, 150, 255)  # Highlight color for cells
         self.INVALID_HIGHLIGHT = (150, 50, 50, 128)  # Red tint for invalid placements
+        self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)  # Green highlight for completable lines
+        self.GOLD_COLOR = (255, 215, 0)  # Gold color for blocks in completable lines
         
         # Grid settings
         self.GRID_SIZE = 40
@@ -126,6 +128,15 @@ class Graphics:
                              (self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y + y * self.GRID_SIZE),
                              (self.GRID_ORIGIN_X + grid_width_px, self.GRID_ORIGIN_Y + y * self.GRID_SIZE), 2)
         
+        # Get the rows and columns that will be completed
+        complete_rows = []
+        complete_cols = []
+        if hasattr(state, 'human_agent'):
+            if hasattr(state.human_agent, 'complete_rows'):
+                complete_rows = state.human_agent.complete_rows
+            if hasattr(state.human_agent, 'complete_cols'):
+                complete_cols = state.human_agent.complete_cols
+        
         # Highlight cells if any and if there's a valid highlight color
         if highlighted_cells and highlight_color:
             for cell in highlighted_cells:
@@ -155,7 +166,13 @@ class Graphics:
                         self.GRID_SIZE - 2 * self.GRID_MARGIN,
                         self.GRID_SIZE - 2 * self.GRID_MARGIN
                     )
-                    pygame.draw.rect(self.screen, color, cell_rect, border_radius=5)
+                    
+                    # Check if this cell is in a row or column that will be completed
+                    # If so, change its color to gold
+                    if y in complete_rows or x in complete_cols:
+                        pygame.draw.rect(self.screen, self.GOLD_COLOR, cell_rect, border_radius=5)
+                    else:
+                        pygame.draw.rect(self.screen, color, cell_rect, border_radius=5)
         
         # Draw "Available Blocks" text - moved up slightly to make room for blocks
         blocks_text = self.small_font.render("Available Blocks:", True, self.WHITE)

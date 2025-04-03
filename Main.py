@@ -17,11 +17,14 @@ class Game:
         self.width = 400
         self.height = 750
         
+        # Initialize human agent first so it can be referenced by state
+        self.human_agent = HumanAgent()
+        
         # Initialize components
         self.state = State()
+        self.state.human_agent = self.human_agent  # Add reference to human_agent in the state
         self.graphics = Graphics(self.width, self.height)
         self.environment = Environment()
-        self.human_agent = HumanAgent()
         
         # Game states
         self.MENU = "menu"
@@ -116,7 +119,7 @@ class Game:
         observation = self.environment.get_observation(self.state)
         
         # Get action from human agent
-        # Pass highlighted cells, highlight color, and valid_placement to draw_game
+        # Pass complete_rows and complete_cols from human_agent to draw_game
         action = self.human_agent.get_action(observation, self.graphics.draw_game(
             self.state, 
             self.human_agent.highlighted_cells, 
