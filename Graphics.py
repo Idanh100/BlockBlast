@@ -3,13 +3,9 @@ from pygame.locals import *
 
 class Graphics:
     def __init__(self, width, height):
-        # Set to specific dimensions of 1920x1080
-        self.width, self.height = 1920, 1080
-        
-        # Create a fullscreen window at the specified resolution
-        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        self.update_resolution(width, height)
         pygame.display.set_caption("Block Blast Game")
-        
+
         # Colors
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
@@ -23,23 +19,30 @@ class Graphics:
         self.INVALID_HIGHLIGHT = (150, 50, 50, 128)
         self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)
         self.GOLD_COLOR = (255, 215, 0)
-        
-        # Adjust grid settings for 1920x1080
-        self.GRID_SIZE = 60  # Larger grid cells for better visibility and interaction
+
+    def update_resolution(self, width, height):
+        """Set window resolution and update all sizes/scales."""
+        self.width, self.height = width, height
+        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+
+        # Grid settings
+        self.GRID_SIZE = min(self.width, self.height) // 20
         self.GRID_MARGIN = int(self.GRID_SIZE * 0.05)
-        
-        # Center the grid horizontally
         self.GRID_ORIGIN_X = (self.width - (8 * self.GRID_SIZE)) // 2
         self.GRID_ORIGIN_Y = int(self.height * 0.2)
-        
-        # Load fonts with scaled sizes for 1920x1080
+
+        # Fonts
         self.large_font = pygame.font.SysFont(None, int(self.height * 0.14))
         self.medium_font = pygame.font.SysFont(None, int(self.height * 0.06))
         self.small_font = pygame.font.SysFont(None, int(self.height * 0.04))
-        
-        # Scale button dimensions
+
+        # Buttons
         self.button_width = int(self.width * 0.25)
         self.button_height = int(self.height * 0.06)
+
+    def resize(self, width, height):
+        """External call to resize the screen and recalculate layout."""
+        self.update_resolution(width, height)
     
     def draw_menu(self):
         """Draw the main menu screen."""

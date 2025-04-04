@@ -11,8 +11,8 @@ class Game:
         pygame.init()
         self.init_database()
 
-        screen = pygame.display.set_mode()  # default is (0,0), so it's fullscreen
-        width, height = pygame.display.Info().current_w, pygame.display.Info().current_h
+        info = pygame.display.get_desktop_sizes()[0]  # אם יש כמה מסכים – לוקח את הראשון
+        width, height = info
 
         # Initialize Graphics first to get screen dimensions
         self.graphics = Graphics(width, height) 
