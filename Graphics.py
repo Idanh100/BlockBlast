@@ -15,6 +15,9 @@ class Graphics:
         self.RED = (220, 70, 70)
         self.YELLOW = (240, 200, 50)
         self.ORANGE = (240, 130, 50)
+        self.GREEN = (100, 200, 100)
+        self.BLUE = (100, 100, 240)
+        self.PURPLE = (180, 100, 240)  # Added purple color
         self.HIGHLIGHT_COLOR = (100, 150, 255)
         self.INVALID_HIGHLIGHT = (150, 50, 50, 128)
         self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)

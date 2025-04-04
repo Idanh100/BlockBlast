@@ -1,9 +1,6 @@
 import pygame
 import random
 
-import pygame
-import random
-
 class Block:
     def __init__(self, shape, color, position):
         self.shape = shape
@@ -45,6 +42,10 @@ class State:
         self.ORANGE = (240, 130, 50)
         self.GREEN = (100, 200, 100)
         self.BLUE = (100, 100, 240)
+        self.PURPLE = (180, 100, 240)  # Added purple color
+        
+        # All available colors
+        self.colors = [self.RED, self.YELLOW, self.ORANGE, self.GREEN, self.BLUE, self.PURPLE]
         
         # Grid dimensions
         self.grid_width, self.grid_height = 8, 8
@@ -56,19 +57,69 @@ class State:
         self.game_over = False
         self.placed_blocks_count = 0
         
-        # Create initial blocks - we'll set positions in the Graphics class
-        self.available_blocks = self.generate_initial_blocks()
+        # Create initial blocks
+        self.available_blocks = self.generate_new_blocks()
+    
+    def generate_all_shapes(self):
+        """Generate all possible block shapes for the game."""
+        return {
+            "square": [[1, 1], [1, 1]],
+            "line2": [[1, 1]],
+            "line3": [[1, 1, 1]],
+            "line4": [[1, 1, 1, 1]],
+            "line5": [[1, 1, 1, 1, 1]],
+            "col2": [[1], [1]],
+            "col3": [[1], [1], [1]],
+            "col4": [[1], [1], [1], [1]],
+            "col5": [[1], [1], [1], [1], [1]],
+            "T": [[0, 1, 0], [1, 1, 1]],
+            "T_inverted": [[1, 1, 1], [0, 1, 0]],
+            "T_right": [[1, 0], [1, 1], [1, 0]],
+            "T_left": [[0, 1], [1, 1], [0, 1]],
+            "L": [[1, 0], [1, 0], [1, 1]],
+            "L_flipped": [[0, 1], [0, 1], [1, 1]],
+            "L_rotated": [[1, 1, 1], [1, 0, 0]],
+            "L_rotated_flipped": [[1, 1, 1], [0, 0, 1]],
+            "Z": [[1, 1, 0], [0, 1, 1]],
+            "Z_vertical": [[0, 1], [1, 1], [1, 0]],
+            "S": [[0, 1, 1], [1, 1, 0]],
+            "S_vertical": [[1, 0], [1, 1], [0, 1]],
+            "plus": [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+            "dot": [[1]],
+            "small_square": [[1, 1], [1, 1]],
+            "corner": [[1, 1], [1, 0]],
+            "corner_flipped": [[1, 1], [0, 1]],
+            "corner_rotated": [[0, 1], [1, 1]],
+            "corner_rotated_flipped": [[1, 0], [1, 1]],
+            "U": [[1, 0, 1], [1, 1, 1]],
+            "U_rotated": [[1, 1], [1, 0], [1, 1]],
+            "U_inverted": [[1, 1, 1], [1, 0, 1]],
+            "U_rotated_flipped": [[1, 1], [0, 1], [1, 1]],
+            "2x3": [[1, 1, 1], [1, 1, 1]],
+            "3x3": [[1, 1, 1], [1, 1, 1], [1, 1, 1]]
+        }
+    
+    def get_random_shape(self):
+        """Get a random shape from all available shapes."""
+        all_shapes = self.generate_all_shapes()
+        shape_name = random.choice(list(all_shapes.keys()))
+        return all_shapes[shape_name]
     
     def generate_initial_blocks(self):
         """Generate the initial set of blocks for a new game."""
         # Default y position - actual position will be set in Graphics
         blocks_y = 580
         
-        blocks = [
-            Block([[1, 1, 1], [1, 1, 1], [1, 1, 1]], self.RED, (20, blocks_y)),
-            Block([[1, 1, 1, 1, 1]], self.YELLOW, (160, blocks_y)),
-            Block([[1, 1, 1, 1, 1]], self.ORANGE, (280, blocks_y))
-        ]
+        # Generate random blocks
+        blocks = []
+        for i in range(3):
+            blocks.append(
+                Block(
+                    self.get_random_shape(),
+                    random.choice(self.colors),
+                    (20 + i * 140, blocks_y)
+                )
+            )
         
         return blocks
     
@@ -77,24 +128,16 @@ class State:
         # Default y position - actual position will be set in Graphics
         blocks_y = 580
         
-        # Block shape options
-        red_shapes = [
-            [[1, 1, 1], [1, 1, 1], [1, 1, 1]], [[1, 1], [1, 1]],
-            [[1, 1, 1], [1, 1, 1]], [[1, 1], [1, 1], [1, 1]]
-        ]
-        yellow_shapes = [
-            [[1, 1, 1, 1, 1]], [[1, 1, 1, 1]], [[1, 1, 1]], [[1, 1]]
-        ]
-        orange_shapes = [
-            [[1], [1], [1], [1], [1]], [[1], [1], [1], [1]],
-            [[1], [1], [1]], [[1, 1], [1, 0]]
-        ]
-        
-        blocks = [
-            Block(random.choice(red_shapes), self.RED, (20, blocks_y)),
-            Block(random.choice(yellow_shapes), self.YELLOW, (160, blocks_y)),
-            Block(random.choice(orange_shapes), self.ORANGE, (280, blocks_y))
-        ]
+        # Generate three completely random blocks with random colors
+        blocks = []
+        for _ in range(3):
+            blocks.append(
+                Block(
+                    self.get_random_shape(),
+                    random.choice(self.colors),
+                    (20, blocks_y)
+                )
+            )
         
         return blocks
     
