@@ -3,24 +3,23 @@ from pygame.locals import *
 
 class Graphics:
     def __init__(self, width, height):
-        self.width = width
-        self.height = height
+        self.width, self.height = width, height
         self.screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Block Blast Game")
         
         # Colors
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
-        self.DARK_BLUE = (35, 50, 95)  # Background
-        self.DARKER_BLUE = (25, 35, 70)  # Grid background
-        self.LIGHT_BLUE = (80, 100, 170)  # Accent
+        self.DARK_BLUE = (35, 50, 95)
+        self.DARKER_BLUE = (25, 35, 70)
+        self.LIGHT_BLUE = (80, 100, 170)
         self.RED = (220, 70, 70)
         self.YELLOW = (240, 200, 50)
         self.ORANGE = (240, 130, 50)
-        self.HIGHLIGHT_COLOR = (100, 150, 255)  # Highlight color for cells
-        self.INVALID_HIGHLIGHT = (150, 50, 50, 128)  # Red tint for invalid placements
-        self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)  # Green highlight for completable lines
-        self.GOLD_COLOR = (255, 215, 0)  # Gold color for blocks in completable lines
+        self.HIGHLIGHT_COLOR = (100, 150, 255)
+        self.INVALID_HIGHLIGHT = (150, 50, 50, 128)
+        self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)
+        self.GOLD_COLOR = (255, 215, 0)
         
         # Grid settings
         self.GRID_SIZE = 40
@@ -34,80 +33,49 @@ class Graphics:
         self.small_font = pygame.font.SysFont(None, 32)
         
         # Button dimensions
-        self.button_width = 200
-        self.button_height = 50
+        self.button_width, self.button_height = 200, 50
     
     def draw_menu(self):
-        """
-        Draw the main menu screen.
-        
-        Returns:
-            dict: Dictionary of UI elements with their rects
-        """
-        # Fill background
+        """Draw the main menu screen."""
         self.screen.fill(self.DARK_BLUE)
         
         # Draw game title
         title = self.large_font.render("Block Blast", True, self.WHITE)
         self.screen.blit(title, (self.width // 2 - title.get_width() // 2, 100))
         
-        # Draw start button
-        start_button = pygame.Rect(
-            self.width // 2 - self.button_width // 2,
-            300,
-            self.button_width,
-            self.button_height
-        )
+        # Draw buttons
+        start_button = pygame.Rect(self.width // 2 - self.button_width // 2, 300, self.button_width, self.button_height)
+        quit_button = pygame.Rect(self.width // 2 - self.button_width // 2, 380, self.button_width, self.button_height)
+        
         pygame.draw.rect(self.screen, self.LIGHT_BLUE, start_button, border_radius=10)
+        pygame.draw.rect(self.screen, self.RED, quit_button, border_radius=10)
+        
+        # Draw button text
         start_text = self.medium_font.render("Start Game", True, self.WHITE)
+        quit_text = self.medium_font.render("Quit", True, self.WHITE)
+        
         self.screen.blit(start_text, (start_button.centerx - start_text.get_width() // 2, 
                                       start_button.centery - start_text.get_height() // 2))
-        
-        # Draw quit button
-        quit_button = pygame.Rect(
-            self.width // 2 - self.button_width // 2,
-            380,
-            self.button_width,
-            self.button_height
-        )
-        pygame.draw.rect(self.screen, self.RED, quit_button, border_radius=10)
-        quit_text = self.medium_font.render("Quit", True, self.WHITE)
         self.screen.blit(quit_text, (quit_button.centerx - quit_text.get_width() // 2, 
                                     quit_button.centery - quit_text.get_height() // 2))
         
-        # Draw basic instructions
+        # Draw instructions
         instruction_text = self.small_font.render("Place blocks to complete rows or columns", True, self.WHITE)
         self.screen.blit(instruction_text, (self.width // 2 - instruction_text.get_width() // 2, 500))
         
-        return {
-            "start_button": start_button,
-            "quit_button": quit_button
-        }
+        return {"start_button": start_button, "quit_button": quit_button}
     
     def draw_game(self, state, highlighted_cells=[], highlight_color=None):
-        """
-        Draw the main game screen.
-        
-        Args:
-            state: The current game state
-            highlighted_cells: List of grid cells to highlight (passed from HumanAgent)
-            highlight_color: The base color for highlighted cells
-            
-        Returns:
-            dict: Dictionary of UI elements with their rects
-        """
-        # Fill background
+        """Draw the main game screen."""
         self.screen.fill(self.DARK_BLUE)
         
-        # Draw score
+        # Draw score and stats
         score_text = self.large_font.render(f"{state.score}", True, self.WHITE)
-        self.screen.blit(score_text, (self.width // 2 - score_text.get_width() // 2, 60))
-        
-        # Draw lines cleared
         lines_text = self.small_font.render(f"Lines: {state.lines_cleared}", True, self.WHITE)
+        self.screen.blit(score_text, (self.width // 2 - score_text.get_width() // 2, 60))
         self.screen.blit(lines_text, (20, 20))
         
-        # Draw settings icon (gear)
+        # Draw settings icon
         settings_icon = pygame.Rect(self.width - 60, 20, 40, 40)
         pygame.draw.circle(self.screen, self.LIGHT_BLUE, settings_icon.center, 20)
         
@@ -120,30 +88,23 @@ class Graphics:
         # Draw grid lines
         for x in range(state.grid_width + 1):
             pygame.draw.line(self.screen, self.DARK_BLUE, 
-                             (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y),
-                             (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y + grid_height_px), 2)
+                            (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y),
+                            (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y + grid_height_px), 2)
         
         for y in range(state.grid_height + 1):
             pygame.draw.line(self.screen, self.DARK_BLUE, 
-                             (self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y + y * self.GRID_SIZE),
-                             (self.GRID_ORIGIN_X + grid_width_px, self.GRID_ORIGIN_Y + y * self.GRID_SIZE), 2)
+                            (self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y + y * self.GRID_SIZE),
+                            (self.GRID_ORIGIN_X + grid_width_px, self.GRID_ORIGIN_Y + y * self.GRID_SIZE), 2)
         
-        # Get the rows and columns that will be completed
-        complete_rows = []
-        complete_cols = []
-        if hasattr(state, 'human_agent'):
-            if hasattr(state.human_agent, 'complete_rows'):
-                complete_rows = state.human_agent.complete_rows
-            if hasattr(state.human_agent, 'complete_cols'):
-                complete_cols = state.human_agent.complete_cols
+        # Get completable rows and columns
+        complete_rows = getattr(getattr(state, 'human_agent', None), 'complete_rows', [])
+        complete_cols = getattr(getattr(state, 'human_agent', None), 'complete_cols', [])
         
-        # Highlight cells if any and if there's a valid highlight color
+        # Highlight cells
         if highlighted_cells and highlight_color:
             for cell in highlighted_cells:
                 grid_x, grid_y = cell
-                # Check if the cell is within valid grid bounds
                 if 0 <= grid_x < state.grid_width and 0 <= grid_y < state.grid_height:
-                    # Determine highlight color - lighter version of the block's color
                     r, g, b = highlight_color
                     cell_highlight_color = (min(r + 80, 255), min(g + 80, 255), min(b + 80, 255))
                     
@@ -166,24 +127,18 @@ class Graphics:
                         self.GRID_SIZE - 2 * self.GRID_MARGIN,
                         self.GRID_SIZE - 2 * self.GRID_MARGIN
                     )
-                    
-                    # Check if this cell is in a row or column that will be completed
-                    # If so, change its color to gold
-                    if y in complete_rows or x in complete_cols:
-                        pygame.draw.rect(self.screen, self.GOLD_COLOR, cell_rect, border_radius=5)
-                    else:
-                        pygame.draw.rect(self.screen, color, cell_rect, border_radius=5)
+                    pygame.draw.rect(self.screen, 
+                                    self.GOLD_COLOR if y in complete_rows or x in complete_cols else color, 
+                                    cell_rect, border_radius=5)
         
-        # Draw "Available Blocks" text - moved up slightly to make room for blocks
+        # Draw "Available Blocks" text
         blocks_text = self.small_font.render("Available Blocks:", True, self.WHITE)
         self.screen.blit(blocks_text, (20, 550))
         
         # Draw available blocks
         block_ui_elements = {}
         for i, block in enumerate(state.available_blocks):
-            # Only draw blocks that haven't been placed (not None)
             if block is not None:
-                # Draw blocks at their actual screen positions, not adjusted by grid
                 self._draw_block_at_position(block)
                 block_ui_elements[f"block_{i}"] = block.rect
         
@@ -195,13 +150,7 @@ class Graphics:
         }
     
     def _draw_block(self, block):
-        """
-        Draw a single block on the screen, adjusted for grid position.
-        Used for blocks that should appear on the grid.
-        
-        Args:
-            block: The Block object to draw
-        """
+        """Draw a single block on the screen, adjusted for grid position."""
         for y in range(block.height):
             for x in range(block.width):
                 if block.shape[y][x] == 1:
@@ -214,44 +163,18 @@ class Graphics:
                     pygame.draw.rect(self.screen, block.color, rect, border_radius=5)
     
     def _draw_block_at_position(self, block):
-        """
-        Draw a single block at its actual screen position.
-        Used for available blocks at the bottom of the screen.
-        
-        Args:
-            block: The Block object to draw
-        """
-        for y in range(block.height):
-            for x in range(block.width):
-                if block.shape[y][x] == 1:
-                    rect = pygame.Rect(
-                        block.rect.x + x * self.GRID_SIZE + self.GRID_MARGIN,
-                        block.rect.y + y * self.GRID_SIZE + self.GRID_MARGIN,
-                        self.GRID_SIZE - 2 * self.GRID_MARGIN,
-                        self.GRID_SIZE - 2 * self.GRID_MARGIN
-                    )
-                    pygame.draw.rect(self.screen, block.color, rect, border_radius=5)
+        """Draw a single block at its actual screen position."""
+        self._draw_block(block)  # Reuse code since functionality is identical
     
     def draw_game_over(self, score, stats):
-        """
-        Draw the game over screen.
-        
-        Args:
-            score: The player's final score
-            stats: Game statistics dictionary
-            
-        Returns:
-            dict: Dictionary of UI elements with their rects
-        """
-        # Fill background
+        """Draw the game over screen."""
         self.screen.fill(self.DARK_BLUE)
         
-        # Draw game over text
+        # Draw game over text and score
         gameover_text = self.large_font.render("Game Over", True, self.WHITE)
-        self.screen.blit(gameover_text, (self.width // 2 - gameover_text.get_width() // 2, 100))
-        
-        # Draw score
         score_text = self.medium_font.render(f"Score: {score}", True, self.WHITE)
+        
+        self.screen.blit(gameover_text, (self.width // 2 - gameover_text.get_width() // 2, 100))
         self.screen.blit(score_text, (self.width // 2 - score_text.get_width() // 2, 200))
         
         # Draw statistics
@@ -273,6 +196,4 @@ class Graphics:
         self.screen.blit(menu_text, (menu_button.centerx - menu_text.get_width() // 2, 
                                      menu_button.centery - menu_text.get_height() // 2))
         
-        return {
-            "menu_button": menu_button
-        }
+        return {"menu_button": menu_button}
