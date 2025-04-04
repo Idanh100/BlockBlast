@@ -11,8 +11,11 @@ class Game:
         pygame.init()
         self.init_database()
         
+        screen = pygame.display.set_mode()  # default is (0,0), so it's fullscreen
+        w, h = screen.get_size()  # the `screen` is a `Surface` type, so it has a get_size method
+
         # Initialize Graphics first to get screen dimensions
-        self.graphics = Graphics(1920, 1080)  # Explicitly set to 1920x1080
+        self.graphics = Graphics(w, h)  # Explicitly set to 1920x1080
         self.width, self.height = self.graphics.width, self.graphics.height
         
         # Initialize components
