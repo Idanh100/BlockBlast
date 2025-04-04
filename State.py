@@ -1,6 +1,9 @@
 import pygame
 import random
 
+import pygame
+import random
+
 class Block:
     def __init__(self, shape, color, position):
         self.shape = shape
@@ -8,8 +11,9 @@ class Block:
         self.width = len(shape[0])
         self.height = len(shape)
         self.dragging = False
+        # The rect will be updated with proper scaling when drawn
         self.rect = pygame.Rect(position[0], position[1], 
-                              self.width * 40, self.height * 40)
+                              self.width * 60, self.height * 60)  # Initial size uses larger cells
     
     def can_place(self, grid, grid_x, grid_y, grid_width, grid_height):
         """Check if block can be placed at the specified grid position."""
@@ -28,8 +32,7 @@ class Block:
             for x in range(self.width):
                 if self.shape[y][x] == 1:
                     grid[grid_y + y][grid_x + x] = self.color
-
-
+                    
 class State:
     def __init__(self):
         self.reset()
@@ -53,11 +56,12 @@ class State:
         self.game_over = False
         self.placed_blocks_count = 0
         
-        # Create initial blocks
+        # Create initial blocks - we'll set positions in the Graphics class
         self.available_blocks = self.generate_initial_blocks()
     
     def generate_initial_blocks(self):
         """Generate the initial set of blocks for a new game."""
+        # Default y position - actual position will be set in Graphics
         blocks_y = 580
         
         blocks = [
@@ -70,6 +74,7 @@ class State:
     
     def generate_new_blocks(self):
         """Generate a new set of blocks to replace all that were placed."""
+        # Default y position - actual position will be set in Graphics
         blocks_y = 580
         
         # Block shape options

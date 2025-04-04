@@ -54,17 +54,38 @@ class HumanAgent:
                 exit()
             
             if event.type == MOUSEBUTTONDOWN:
-                # Check for block clicking
+                # Check for block clicking with improved hitbox detection
                 for block_key in ui_elements["blocks"]:
-                    if ui_elements["blocks"][block_key].collidepoint(event.pos):
-                        block_index = int(block_key.split('_')[1])
+                    block_index = int(block_key.split('_')[1])
+                    if block_index < len(observation['available_blocks']) and observation['available_blocks'][block_index] is not None:
+                        block = observation['available_blocks'][block_index]
                         
-                        if block_index < len(observation['available_blocks']) and observation['available_blocks'][block_index] is not None:
-                            self.dragging_block = observation['available_blocks'][block_index]
+                        # Create proper hitbox for the block based on its actual shape
+                        mouse_x, mouse_y = event.pos
+                        grid_size = ui_elements["grid_size"]
+                        
+                        # Check if mouse is over any cell of the block
+                        is_over_block = False
+                        for y in range(block.height):
+                            for x in range(block.width):
+                                if block.shape[y][x] == 1:
+                                    cell_rect = pygame.Rect(
+                                        block.rect.x + x * grid_size,
+                                        block.rect.y + y * grid_size,
+                                        grid_size,
+                                        grid_size
+                                    )
+                                    if cell_rect.collidepoint(mouse_x, mouse_y):
+                                        is_over_block = True
+                                        break
+                            if is_over_block:
+                                break
+                                
+                        if is_over_block:
+                            self.dragging_block = block
                             self.dragging_block_index = block_index
-                            mouse_x, mouse_y = event.pos
-                            self.offset_x = self.dragging_block.rect.x - mouse_x
-                            self.offset_y = self.dragging_block.rect.y - mouse_y
+                            self.offset_x = block.rect.x - mouse_x
+                            self.offset_y = block.rect.y - mouse_y
                             break
             
             elif event.type == MOUSEBUTTONUP and self.dragging_block:
@@ -83,8 +104,9 @@ class HumanAgent:
                 # Reset block position and dragging state
                 block_key = f"block_{self.dragging_block_index}"
                 if self.dragging_block_index < len(ui_elements["blocks"]) and block_key in ui_elements["blocks"]:
-                    self.dragging_block.rect.x = ui_elements["blocks"][block_key].x
-                    self.dragging_block.rect.y = ui_elements["blocks"][block_key].y
+                    original_rect = ui_elements["blocks"][block_key]
+                    self.dragging_block.rect.x = original_rect.x
+                    self.dragging_block.rect.y = original_rect.y
                 
                 # Reset all dragging states
                 self.dragging_block = None
@@ -143,7 +165,10 @@ class HumanAgent:
                     dy = (mouse_y + self.offset_y) - test_pixel_y
                     distance = (dx**2 + dy**2)**0.5
                     
-                    if distance <= self.snap_threshold * grid_size / 40:  # Scaled by grid size
+                    # Adjust snap threshold based on grid size
+                    adjusted_threshold = self.snap_threshold * (grid_size / 40.0)
+                    
+                    if distance <= adjusted_threshold:
                         self.valid_placement = True
                         self.last_valid_position = (test_grid_x, test_grid_y)
                         self.highlighted_cells = self._get_highlighted_cells_for_position(test_grid_x, test_grid_y)

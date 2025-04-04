@@ -10,14 +10,21 @@ class Game:
     def __init__(self):
         pygame.init()
         self.init_database()
-        self.width, self.height = 400, 750
+        
+        # Initialize Graphics first to get screen dimensions
+        self.graphics = Graphics(1920, 1080)  # Explicitly set to 1920x1080
+        self.width, self.height = self.graphics.width, self.graphics.height
         
         # Initialize components
         self.human_agent = HumanAgent()
         self.state = State()
         self.state.human_agent = self.human_agent
-        self.graphics = Graphics(self.width, self.height)
         self.environment = Environment()
+        
+        # Update environment with grid settings from Graphics
+        self.environment.grid_size = self.graphics.GRID_SIZE
+        self.environment.grid_origin_x = self.graphics.GRID_ORIGIN_X
+        self.environment.grid_origin_y = self.graphics.GRID_ORIGIN_Y
         
         # Game states
         self.MENU, self.PLAYING, self.GAME_OVER = "menu", "playing", "game_over"
