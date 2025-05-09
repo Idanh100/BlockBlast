@@ -1,27 +1,32 @@
 import pygame
 from Graphics2 import Graphics
 from State2 import State
+from Environment2 import Environment
+from HumanAgent2 import HumanAgent
 import os
 
 class Game:
-    def __init__(self):
-        pygame.init()
-        info = pygame.display.get_desktop_sizes()[0]  # אם יש כמה מסכים – לוקח את הראשון
-        width, height = info
+    def __init__(self):        
+       pass
 
-        self.clock = pygame.time.Clock()
-        self.clock.tick(60)  # מגביל ל־60 FPS
-        
-        self.State = State()
-        self.Graphics = Graphics(width, height)
-        
-        self.run = True
-        while (self.run):
-            self.Graphics.draw_game(self.State)
+    def play (self):
+        graphics = Graphics()
+        env = Environment(State())
+        env.reset()
+        player = HumanAgent()
+        run = True
+        state = env.state
+        while (run):
+            graphics.draw_game(state)
             pygame.display.flip()
+            action = player.get_action(state)
+            if action == "QUIT":
+                run = False
+            elif action:
+                env.move(state, action)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.run = False
+                    run = False
 
 
             
@@ -29,3 +34,4 @@ class Game:
 
 if __name__ == "__main__":
     game = Game()
+    game.play()

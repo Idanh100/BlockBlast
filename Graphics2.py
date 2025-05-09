@@ -1,15 +1,20 @@
 import pygame
 
 class Graphics:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.GRID_ORIGIN_Y = height / 10
-        self.GRID_SIZE = width / 30
-        self.GRID_ORIGIN_X = (width / 2) - (self.GRID_SIZE * 4)
+    def __init__(self):
+        pygame.init()
+        info = pygame.display.get_desktop_sizes()[0]  # אם יש כמה מסכים – לוקח את הראשון
+        self.width, self.height = info
+
+        self.GRID_ORIGIN_Y = self.height / 10
+        self.GRID_SIZE = self.width / 30
+        self.GRID_ORIGIN_X = (self.width / 2) - (self.GRID_SIZE * 4)
         self.GRID_MARGIN = 4
 
-        self.screen = pygame.display.set_mode((width, height))
+        self.clock = pygame.time.Clock()
+        self.clock.tick(60)  # מגביל ל־60 FPS
+
+        self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Block Blast Game")
 
         self.WHITE = (255, 255, 255)
@@ -31,31 +36,53 @@ class Graphics:
     def draw_game(self, state):
         self.screen.fill(self.DARK_BLUE)
         self._draw_grid(state)
+        for block in state.Blocks:
+            self._draw_block(block)
 
     def _draw_grid(self, state):
-        grid = state.Board  # <<< השתמש במצב מהאובייקט State
+        """
+        Draw the game grid, including the blocks that have been fixed to the board.
+        """
+        grid = state.Board  # הלוח הנוכחי
         grid_height, grid_width = grid.shape
 
         grid_width_px = grid_width * self.GRID_SIZE
         grid_height_px = grid_height * self.GRID_SIZE
         grid_rect = pygame.Rect(self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y, grid_width_px, grid_height_px)
-        pygame.draw.rect(self.screen, self.DARKER_BLUE, grid_rect)
-        
-        # Draw grid lines
+        pygame.draw.rect(self.screen, self.DARKER_BLUE, grid_rect)  # רקע הלוח
+
+        # ציור המשבצות בלוח
+        for y in range(grid_height):
+            for x in range(grid_width):
+                cell_value = grid[y][x]
+                if cell_value != 0:  # אם התא אינו ריק
+                    color = self.get_color_from_id(cell_value)  # קבלת הצבע לפי מזהה
+                    rect = pygame.Rect(
+                        self.GRID_ORIGIN_X + x * self.GRID_SIZE + self.GRID_MARGIN,
+                        self.GRID_ORIGIN_Y + y * self.GRID_SIZE + self.GRID_MARGIN,
+                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
+                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN
+                    )
+                    # ציור התא בצבע המתאים עם קצוות מעוגלות
+                    pygame.draw.rect(self.screen, color, rect, border_radius=5)
+                    # ציור מסגרת התא עם קצוות מעוגלות
+                    pygame.draw.rect(self.screen, self.DARK_BLUE, rect, width=2, border_radius=5)
+
+        # ציור קווי הרשת
         for x in range(grid_width + 1):
-            pygame.draw.line(self.screen, self.DARK_BLUE, 
-                            (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y),
-                            (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y + grid_height_px), 2)
+            pygame.draw.line(self.screen, self.DARK_BLUE,
+                             (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y),
+                             (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y + grid_height_px), 2)
 
         for y in range(grid_height + 1):
-            pygame.draw.line(self.screen, self.DARK_BLUE, 
-                            (self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y + y * self.GRID_SIZE),
-                            (self.GRID_ORIGIN_X + grid_width_px, self.GRID_ORIGIN_Y + y * self.GRID_SIZE), 2)
+            pygame.draw.line(self.screen, self.DARK_BLUE,
+                             (self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y + y * self.GRID_SIZE),
+                             (self.GRID_ORIGIN_X + grid_width_px, self.GRID_ORIGIN_Y + y * self.GRID_SIZE), 2)
             
     def _draw_block(self, block):
         """Draw a single block on the screen, adjusted for grid position."""
-        for y in range(block.height):
-            for x in range(block.width):
+        for y in range(len(block.shape)):
+            for x in range(len(block.shape[0])):
                 if block.shape[y][x] == 1:
                     rect = pygame.Rect(
                         block.rect.x + x * self.GRID_SIZE + self.GRID_MARGIN,
@@ -64,3 +91,23 @@ class Graphics:
                         self.GRID_SIZE - 2 * self.GRID_MARGIN
                     )
                     pygame.draw.rect(self.screen, block.color, rect, border_radius=5)
+
+    def get_color_from_id(self, color_id):
+        """
+        Get the color corresponding to a given color ID.
+
+        Args:
+            color_id (int or float): The color ID.
+
+        Returns:
+            tuple: The RGB color.
+        """
+        colors = [
+            (220, 70, 70),    # RED
+            (240, 200, 50),   # YELLOW
+            (240, 130, 50),   # ORANGE
+            (100, 200, 100),  # GREEN
+            (100, 100, 240),  # BLUE
+            (180, 100, 240)   # PURPLE
+        ]
+        return colors[(int(color_id)) % len(colors)]  # המרת color_id ל-int
