@@ -42,6 +42,10 @@ class Graphics:
         for block in state.Blocks:
             self._draw_block(block)
         
+        # הדגשת שורות ועמודות שיתמלאו אם הבלוק יונח
+        if dragging_block:
+            self._highlight_full_lines(state, dragging_block)
+        
         # ציור הניקוד בצד שמאל במרכז
         self._draw_score(state.score)
 
@@ -186,6 +190,21 @@ class Graphics:
         if not self._is_valid_move(state, block, (grid_x, grid_y)):
             return  # אם המהלך אינו חוקי, לא מציירים הארה
 
+        # יצירת עותק זמני של הלוח
+        temp_board = state.Board.copy()
+        for y, row in enumerate(block.shape):
+            for x, cell in enumerate(row):
+                if cell == 1:  # תא פעיל בבלוק
+                    board_x = grid_x + x
+                    board_y = grid_y + y
+                    if 0 <= board_x < temp_board.shape[1] and 0 <= board_y < temp_board.shape[0]:
+                        temp_board[board_y][board_x] = 1  # סימון התא כאילו הבלוק הונח
+
+        # בדיקת שורות ועמודות מלאות
+        rows_to_highlight = [y for y in range(temp_board.shape[0]) if all(temp_board[y, :] != 0)]
+        cols_to_highlight = [x for x in range(temp_board.shape[1]) if all(temp_board[:, x] != 0)]
+
+        # הארה של המיקום הפוטנציאלי של הבלוק
         for y, row in enumerate(block.shape):
             for x, cell in enumerate(row):
                 if cell == 1:  # תא פעיל בבלוק
@@ -194,15 +213,19 @@ class Graphics:
 
                     # בדיקה אם התא בתוך גבולות הלוח
                     if 0 <= board_x < state.Board.shape[1] and 0 <= board_y < state.Board.shape[0]:
-                        color = block.color
-                        highlight_color = tuple(min(c + 50, 255) for c in color)  # צבע בהיר יותר
+                        # בדיקה אם התא שייך לשורה או עמודה שתתפוצץ
+                        if board_y in rows_to_highlight or board_x in cols_to_highlight:
+                            color = self.GOLD_COLOR  # צבע זהב
+                        else:
+                            color = tuple(min(c + 50, 255) for c in block.color)  # צבע בהיר יותר
+
                         rect = pygame.Rect(
                             self.GRID_ORIGIN_X + board_x * self.GRID_SIZE + self.GRID_MARGIN,
                             self.GRID_ORIGIN_Y + board_y * self.GRID_SIZE + self.GRID_MARGIN,
                             self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
                             self.GRID_SIZE - 1.5 * self.GRID_MARGIN
                         )
-                        pygame.draw.rect(self.screen, highlight_color, rect, border_radius=5)
+                        pygame.draw.rect(self.screen, color, rect, border_radius=5)
 
     def _is_valid_move(self, state, block, position):
         """
@@ -234,3 +257,61 @@ class Graphics:
                         return False
 
         return True
+
+    def _highlight_full_lines(self, state, block):
+        """
+        Highlight the blocks in rows and columns that will become full if the block is placed,
+        including the blocks the user is about to place.
+        """
+        grid_x = int((block.rect.x - self.GRID_ORIGIN_X) / self.GRID_SIZE)
+        grid_y = int((block.rect.y - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
+
+        # בדיקת חוקיות המהלך
+        if not self._is_valid_move(state, block, (grid_x, grid_y)):
+            return  # אם המהלך אינו חוקי, לא מציירים כלום
+
+        # יצירת עותק זמני של הלוח
+        temp_board = state.Board.copy()
+        for y, row in enumerate(block.shape):
+            for x, cell in enumerate(row):
+                if cell == 1:  # תא פעיל בבלוק
+                    board_x = grid_x + x
+                    board_y = grid_y + y
+                    if 0 <= board_x < temp_board.shape[1] and 0 <= board_y < temp_board.shape[0]:
+                        temp_board[board_y][board_x] = 1  # סימון התא כאילו הבלוק הונח
+
+        # בדיקת שורות ועמודות מלאות
+        rows_to_highlight = [y for y in range(temp_board.shape[0]) if all(temp_board[y, :] != 0)]
+        cols_to_highlight = [x for x in range(temp_board.shape[1]) if all(temp_board[:, x] != 0)]
+
+        # הדגשת הבלוקים המונחים בשורות מלאות
+        for row in rows_to_highlight:
+            for col in range(temp_board.shape[1]):
+                if state.Board[row, col] != 0 or any(
+                    cell == 1 and grid_x + x == col and grid_y + y == row
+                    for y, row_cells in enumerate(block.shape)
+                    for x, cell in enumerate(row_cells)
+                ):  # אם יש בלוק מונח או בלוק פוטנציאלי
+                    rect = pygame.Rect(
+                        self.GRID_ORIGIN_X + col * self.GRID_SIZE + self.GRID_MARGIN,
+                        self.GRID_ORIGIN_Y + row * self.GRID_SIZE + self.GRID_MARGIN,
+                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
+                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN
+                    )
+                    pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
+
+        # הדגשת הבלוקים המונחים בעמודות מלאות
+        for col in cols_to_highlight:
+            for row in range(temp_board.shape[0]):
+                if state.Board[row, col] != 0 or any(
+                    cell == 1 and grid_x + x == col and grid_y + y == row
+                    for y, row_cells in enumerate(block.shape)
+                    for x, cell in enumerate(row_cells)
+                ):  # אם יש בלוק מונח או בלוק פוטנציאלי
+                    rect = pygame.Rect(
+                        self.GRID_ORIGIN_X + col * self.GRID_SIZE + self.GRID_MARGIN,
+                        self.GRID_ORIGIN_Y + row * self.GRID_SIZE + self.GRID_MARGIN,
+                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
+                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN
+                    )
+                    pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
