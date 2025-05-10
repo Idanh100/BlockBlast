@@ -213,11 +213,8 @@ class Graphics:
 
                     # בדיקה אם התא בתוך גבולות הלוח
                     if 0 <= board_x < state.Board.shape[1] and 0 <= board_y < state.Board.shape[0]:
-                        # בדיקה אם התא שייך לשורה או עמודה שתתפוצץ
-                        if board_y in rows_to_highlight or board_x in cols_to_highlight:
-                            color = self.GOLD_COLOR  # צבע זהב
-                        else:
-                            color = tuple(min(c + 50, 255) for c in block.color)  # צבע בהיר יותר
+                        # אם התא שייך לבלוק הנוכחי, השתמש בצבע הבהיר של הבלוק
+                        color = tuple(min(c + 50, 255) for c in block.color)
 
                         rect = pygame.Rect(
                             self.GRID_ORIGIN_X + board_x * self.GRID_SIZE + self.GRID_MARGIN,
@@ -261,7 +258,7 @@ class Graphics:
     def _highlight_full_lines(self, state, block):
         """
         Highlight the blocks in rows and columns that will become full if the block is placed,
-        including the blocks the user is about to place.
+        excluding the blocks the user is about to place.
         """
         grid_x = int((block.rect.x - self.GRID_ORIGIN_X) / self.GRID_SIZE)
         grid_y = int((block.rect.y - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
@@ -287,31 +284,37 @@ class Graphics:
         # הדגשת הבלוקים המונחים בשורות מלאות
         for row in rows_to_highlight:
             for col in range(temp_board.shape[1]):
-                if state.Board[row, col] != 0 or any(
+                # בדיקה אם התא שייך לבלוק הנוכחי
+                if any(
                     cell == 1 and grid_x + x == col and grid_y + y == row
                     for y, row_cells in enumerate(block.shape)
                     for x, cell in enumerate(row_cells)
-                ):  # אם יש בלוק מונח או בלוק פוטנציאלי
-                    rect = pygame.Rect(
-                        self.GRID_ORIGIN_X + col * self.GRID_SIZE + self.GRID_MARGIN,
-                        self.GRID_ORIGIN_Y + row * self.GRID_SIZE + self.GRID_MARGIN,
-                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
-                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN
-                    )
-                    pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
+                ):
+                    continue  # דלג על תא ששייך לבלוק הנוכחי
+
+                rect = pygame.Rect(
+                    self.GRID_ORIGIN_X + col * self.GRID_SIZE + self.GRID_MARGIN,
+                    self.GRID_ORIGIN_Y + row * self.GRID_SIZE + self.GRID_MARGIN,
+                    self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
+                    self.GRID_SIZE - 1.5 * self.GRID_MARGIN
+                )
+                pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
 
         # הדגשת הבלוקים המונחים בעמודות מלאות
         for col in cols_to_highlight:
             for row in range(temp_board.shape[0]):
-                if state.Board[row, col] != 0 or any(
+                # בדיקה אם התא שייך לבלוק הנוכחי
+                if any(
                     cell == 1 and grid_x + x == col and grid_y + y == row
                     for y, row_cells in enumerate(block.shape)
                     for x, cell in enumerate(row_cells)
-                ):  # אם יש בלוק מונח או בלוק פוטנציאלי
-                    rect = pygame.Rect(
-                        self.GRID_ORIGIN_X + col * self.GRID_SIZE + self.GRID_MARGIN,
-                        self.GRID_ORIGIN_Y + row * self.GRID_SIZE + self.GRID_MARGIN,
-                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
-                        self.GRID_SIZE - 1.5 * self.GRID_MARGIN
-                    )
-                    pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
+                ):
+                    continue  # דלג על תא ששייך לבלוק הנוכחי
+
+                rect = pygame.Rect(
+                    self.GRID_ORIGIN_X + col * self.GRID_SIZE + self.GRID_MARGIN,
+                    self.GRID_ORIGIN_Y + row * self.GRID_SIZE + self.GRID_MARGIN,
+                    self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
+                    self.GRID_SIZE - 1.5 * self.GRID_MARGIN
+                )
+                pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
