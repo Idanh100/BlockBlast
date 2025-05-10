@@ -185,21 +185,36 @@ class Environment:
 
     def check_and_explode_rows(self, state: State):
         """
-        Check for full rows, remove them, and update the score.
+        Check for full rows and columns, remove them, and update the score.
 
         Args:
             state (State): The current game state.
         """
         board = state.Board
         rows_to_explode = []
+        cols_to_explode = []
+
+        # בדיקת שורות מלאות
         for y, row in enumerate(board):
             if all(cell != 0 for cell in row):  # אם כל התאים בשורה מלאים
                 rows_to_explode.append(y)
 
-        if rows_to_explode:
-            for row_index in rows_to_explode:
-                board[row_index] = [0] * len(board[row_index])  # ריקון השורה
-                state.score += 10  # עדכון הניקוד
-                print(f"Row {row_index} exploded! Score increased by 10. Total score: {state.score}")
+        # בדיקת עמודות מלאות
+        for x in range(len(board[0])):
+            if all(row[x] != 0 for row in board):  # אם כל התאים בעמודה מלאים
+                cols_to_explode.append(x)
+
+        # פיצוץ שורות
+        for row_index in rows_to_explode:
+            board[row_index] = [0] * len(board[row_index])  # ריקון השורה
+            state.score += 10  # ניקוד לשורה
+            print(f"Row {row_index} exploded! Score increased by 10. Total score: {state.score}")
+
+        # פיצוץ עמודות
+        for col_index in cols_to_explode:
+            for row in board:
+                row[col_index] = 0  # ריקון העמודה
+            state.score += 10  # ניקוד לעמודה
+            print(f"Column {col_index} exploded! Score increased by 10. Total score: {state.score}")
 
 
