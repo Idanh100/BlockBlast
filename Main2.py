@@ -29,7 +29,6 @@ class Game:
 
         while run:
             if game_over:
-                # הצגת מסך Game Over עם כפתורים
                 restart_button, main_menu_button = graphics.draw_game_over(state)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
