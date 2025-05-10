@@ -49,6 +49,9 @@ class Graphics:
         # ציור הניקוד בצד שמאל במרכז
         self._draw_score(state.score)
 
+        # ציור אנימציית Combo אם יש
+        self._draw_combo_animation(state)
+
     def _draw_grid(self, state, dragging_block=None):
         """
         Draw the game grid, including the blocks that have been fixed to the board.
@@ -318,3 +321,30 @@ class Graphics:
                     self.GRID_SIZE - 1.5 * self.GRID_MARGIN
                 )
                 pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
+
+    def _draw_combo_animation(self, state):
+        """
+        Draw a combo animation below the score if the player is in a combo streak.
+        """
+        if state.in_combo and state.combo_count >= 2:  # הצגת האנימציה רק מ-x2 ומעלה
+            font = pygame.font.SysFont("Arial", 36, bold=True)
+            combo_text = font.render(f"Combo x{state.combo_count}!", True, self.GOLD_COLOR)
+            text_rect = combo_text.get_rect()
+
+            # מיקום האנימציה: אותו X של הניקוד, מתחתיו
+            score_x = self.GRID_ORIGIN_X / 2
+            score_y = self.GRID_ORIGIN_Y
+            text_rect.midtop = (score_x, score_y + 60)  # 60 פיקסלים מתחת לניקוד
+
+            # רקע לאנימציה
+            background_rect = pygame.Rect(
+                text_rect.x - 10, text_rect.y - 10,
+                text_rect.width + 20, text_rect.height + 20
+            )
+            pygame.draw.rect(self.screen, self.LIGHT_BLUE, background_rect, border_radius=15)
+
+            # מסגרת מסביב לרקע
+            pygame.draw.rect(self.screen, self.GOLD_COLOR, background_rect, width=3, border_radius=15)
+
+            # ציור הטקסט
+            self.screen.blit(combo_text, text_rect)

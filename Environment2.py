@@ -181,37 +181,39 @@ class Environment:
 
     def check_and_explode_rows(self, state: State):
         """
-        Check for full rows and columns, remove them, and update the score.
-
-        Args:
-            state (State): The current game state.
+        Check for full rows or columns, explode them, and update the score.
         """
         board = state.Board
-        rows_to_explode = []
-        cols_to_explode = []
-
-        # בדיקת שורות מלאות
-        for y, row in enumerate(board):
-            if all(cell != 0 for cell in row):  # אם כל התאים בשורה מלאים
-                rows_to_explode.append(y)
-
-        # בדיקת עמודות מלאות
-        for x in range(len(board[0])):
-            if all(row[x] != 0 for row in board):  # אם כל התאים בעמודה מלאים
-                cols_to_explode.append(x)
+        rows_to_explode = [y for y in range(board.shape[0]) if all(board[y, :] != 0)]
+        cols_to_explode = [x for x in range(board.shape[1]) if all(board[:, x] != 0)]
 
         # פיצוץ שורות
-        for row_index in rows_to_explode:
-            board[row_index] = [0] * len(board[row_index])  # ריקון השורה
-            state.score += 10  # ניקוד לשורה
-            print(f"Row {row_index} exploded! Score increased by 10. Total score: {state.score}")
+        for row in rows_to_explode:
+            board[row, :] = 0
 
         # פיצוץ עמודות
-        for col_index in cols_to_explode:
-            for row in board:
-                row[col_index] = 0  # ריקון העמודה
-            state.score += 10  # ניקוד לעמודה
-            print(f"Column {col_index} exploded! Score increased by 10. Total score: {state.score}")
+        for col in cols_to_explode:
+            board[:, col] = 0
+
+        # עדכון ניקוד
+        num_explosions = len(rows_to_explode) + len(cols_to_explode)
+        if num_explosions > 0:
+            state.turns_since_last_explosion = 0  # איפוס ספירת התורות
+            if state.in_combo:
+                state.combo_count += num_explosions
+            else:
+                state.combo_count = num_explosions
+
+            # חישוב ניקוד Combo
+            for i in range(num_explosions):
+                state.score += (state.combo_count + i) * 10
+
+            state.in_combo = True  # הפעלת Combo
+        else:
+            state.turns_since_last_explosion += 1
+            if state.turns_since_last_explosion > 2:  # סיום Combo לאחר 2 תורות ללא פיצוץ
+                state.in_combo = False
+                state.combo_count = 0
 
     def is_game_over(self, state: State) -> bool:
         """
