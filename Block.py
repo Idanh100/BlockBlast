@@ -5,6 +5,7 @@ class Block:
         self.shape = shape
         self.rect = rect
         self.color_id = color_id  # מזהה ייחודי לבלוק (מספר שמייצג צבע)
+        self.initial_position = rect.copy()  # שמירת המיקום ההתחלתי
         
         RED = (220, 70, 70)
         YELLOW = (240, 200, 50)

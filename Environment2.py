@@ -68,34 +68,26 @@ class Environment:
         print(self.state.Board)  # הדפסת הלוח המאופס לצורך בדיקה
 
     def set_random_block(self, state: State = None):
-        """Get a random shape from all available shapes."""
         if state is None:
             state = self.state
         all_shapes = self.all_shapes()
         blocks = random.sample(list(all_shapes.values()), 3)
         blocks_lst = []
         
-        start_x = (self.width / 2) - (self.width / 4)  # מיקום X התחלתי
-        start_y = self.height / 1.5  # מיקום Y מתחת ללוח
-        spacing = self.width / 5  # רווח בין בלוקים
+        start_x = (self.width / 2) - (self.width / 4)
+        start_y = self.height / 1.5
+        spacing = self.width / 5
 
         for i, block in enumerate(blocks):
-            rect = pygame.Rect(start_x + i * spacing, start_y, 50, 50)  # מיקום וגודל
-            blocks_lst.append(Block(block, rect, i + 1))  # מזהה ייחודי לכל בלוק
+            rect = pygame.Rect(start_x + i * spacing, start_y, 50, 50)
+            new_block = Block(block, rect, i + 1)
+            new_block.initial_position = rect.copy()  # שמירת המיקום ההתחלתי
+            blocks_lst.append(new_block)
 
-        state.Blocks = set(blocks_lst)  
+        state.Blocks = set(blocks_lst)
 
     def move(self, state: State, action: tuple):
-        """
-        Handle the move action. Place the block on the board if the move is valid,
-        otherwise reset the block to its initial position.
-
-        Args:
-            state (State): The current game state.
-            action (tuple): A tuple containing the block and its drop position.
-        """
         block, position = action
-        initial_position = block.rect.copy()  # שמירת המיקום ההתחלתי של הבלוק
 
         # המרת מיקום פיקסלים למיקום רשת
         grid_x = int((position[0] - self.GRID_ORIGIN_X) / self.GRID_SIZE)
@@ -103,16 +95,15 @@ class Environment:
 
         # בדיקת חוקיות המהלך
         if self.is_valid_move(state, block, (grid_x, grid_y)):
-            # קיבוע הבלוק ללוח
             self.fix_block_to_board(state, block, (grid_x, grid_y))
             print("Move is valid. Block fixed to the board.")
 
             # בדיקה אם יש שורות שצריך לפוצץ
             self.check_and_explode_rows(state)
         else:
-            # החזרת הבלוק למקומו ההתחלתי
-            block.rect = initial_position
-            print("Move is invalid. Block reset to initial position.")
+            # החזרת הבלוק למיקומו ההתחלתי הקבוע
+            block.rect = block.initial_position.copy()
+            print("Move is invalid. Block reset to its initial position.")
 
         # בדיקה אם צריך ליצור בלוקים חדשים
         self.check_and_generate_blocks()
