@@ -32,7 +32,7 @@ class Game:
                         elif event.key == pygame.K_q:  # יציאה מהמשחק
                             run = False
             else:
-                graphics.draw_game(state)
+                graphics.draw_game(state, player.selected_block)
                 pygame.display.flip()
                 action = player.get_action(state)
                 if action == "QUIT":

@@ -32,21 +32,23 @@ class Graphics:
         self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)
         self.GOLD_COLOR = (255, 215, 0)
            
-    def draw_game(self, state):
+    def draw_game(self, state, dragging_block=None):
         """
         Draw the entire game state, including the board, blocks, and score.
+        If a block is being dragged, highlight the potential placement.
         """
         self.screen.fill(self.DARK_BLUE)
-        self._draw_grid(state)
+        self._draw_grid(state, dragging_block)
         for block in state.Blocks:
             self._draw_block(block)
         
         # ציור הניקוד בצד שמאל במרכז
         self._draw_score(state.score)
 
-    def _draw_grid(self, state):
+    def _draw_grid(self, state, dragging_block=None):
         """
         Draw the game grid, including the blocks that have been fixed to the board.
+        If a block is being dragged, highlight the potential placement.
         """
         grid = state.Board  # הלוח הנוכחי
         grid_height, grid_width = grid.shape
@@ -55,6 +57,10 @@ class Graphics:
         grid_height_px = grid_height * self.GRID_SIZE
         grid_rect = pygame.Rect(self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y, grid_width_px, grid_height_px)
         pygame.draw.rect(self.screen, self.DARKER_BLUE, grid_rect)  # רקע הלוח
+
+        # Highlight potential placement if dragging a block
+        if dragging_block:
+            self._highlight_potential_placement(state, dragging_block)
 
         # ציור המשבצות בלוח
         for y in range(grid_height):
@@ -168,3 +174,63 @@ class Graphics:
         self.screen.blit(restart_text, restart_rect)
 
         pygame.display.flip()
+
+    def _highlight_potential_placement(self, state, block):
+        """
+        Highlight the potential placement of the block on the grid if the move is valid.
+        """
+        grid_x = int((block.rect.x - self.GRID_ORIGIN_X) / self.GRID_SIZE)
+        grid_y = int((block.rect.y - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
+
+        # בדיקת חוקיות המהלך
+        if not self._is_valid_move(state, block, (grid_x, grid_y)):
+            return  # אם המהלך אינו חוקי, לא מציירים הארה
+
+        for y, row in enumerate(block.shape):
+            for x, cell in enumerate(row):
+                if cell == 1:  # תא פעיל בבלוק
+                    board_x = grid_x + x
+                    board_y = grid_y + y
+
+                    # בדיקה אם התא בתוך גבולות הלוח
+                    if 0 <= board_x < state.Board.shape[1] and 0 <= board_y < state.Board.shape[0]:
+                        color = block.color
+                        highlight_color = tuple(min(c + 50, 255) for c in color)  # צבע בהיר יותר
+                        rect = pygame.Rect(
+                            self.GRID_ORIGIN_X + board_x * self.GRID_SIZE + self.GRID_MARGIN,
+                            self.GRID_ORIGIN_Y + board_y * self.GRID_SIZE + self.GRID_MARGIN,
+                            self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
+                            self.GRID_SIZE - 1.5 * self.GRID_MARGIN
+                        )
+                        pygame.draw.rect(self.screen, highlight_color, rect, border_radius=5)
+
+    def _is_valid_move(self, state, block, position):
+        """
+        Check if placing the block at the given position is a valid move.
+
+        Args:
+            state (State): The current game state.
+            block (Block): The block to place.
+            position (tuple): The (x, y) position where the block is to be placed.
+
+        Returns:
+            bool: True if the move is valid, False otherwise.
+        """
+        board = state.Board
+        grid_x, grid_y = position
+
+        for y, row in enumerate(block.shape):
+            for x, cell in enumerate(row):
+                if cell == 1:  # תא פעיל בבלוק
+                    board_x = grid_x + x
+                    board_y = grid_y + y
+
+                    # בדיקה אם התא חורג מגבולות הלוח
+                    if board_x < 0 or board_x >= board.shape[1] or board_y < 0 or board_y >= board.shape[0]:
+                        return False
+
+                    # בדיקה אם התא כבר תפוס
+                    if board[board_y][board_x] != 0:
+                        return False
+
+        return True
