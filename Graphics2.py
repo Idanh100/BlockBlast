@@ -1,4 +1,5 @@
 import pygame
+import random  # ייבוא המודול random
 
 class Graphics:
     def __init__(self):
@@ -31,7 +32,10 @@ class Graphics:
         self.INVALID_HIGHLIGHT = (150, 50, 50, 128)
         self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)
         self.GOLD_COLOR = (255, 215, 0)
-           
+
+        self.frame_count = 0  # מונה פריימים
+        self.background_blocks = []  # בלוקים ברקע
+
     def draw_game(self, state, dragging_block=None):
         """
         Draw the entire game state, including the board, blocks, and score.
@@ -160,24 +164,48 @@ class Graphics:
         """
         Draw the Game Over screen with options to restart or return to the main menu.
         """
+        self.frame_count += 1  # עדכון מונה הפריימים
+
+        # התחלפות הבלוקים ברקע כל 60 פריימים
+        if self.frame_count % 60 == 0 or not self.background_blocks:
+            self._generate_background_blocks()
+
         self.screen.fill(self.DARK_BLUE)
+
+        # ציור הבלוקים ברקע
+        self._draw_background_blocks()
 
         # טקסט Game Over
         font = pygame.font.SysFont("Arial", 72, bold=True)
         game_over_text = font.render("Game Over", True, self.RED)
         game_over_rect = game_over_text.get_rect(center=(self.width // 2, self.height // 4))
+
+        # רקע לכותרת
+        background_rect = pygame.Rect(
+            game_over_rect.x - 20, game_over_rect.y - 20,
+            game_over_rect.width + 40, game_over_rect.height + 40
+        )
+        pygame.draw.rect(self.screen, self.DARKER_BLUE, background_rect, border_radius=15)
+        pygame.draw.rect(self.screen, self.RED, background_rect, width=5, border_radius=15)
         self.screen.blit(game_over_text, game_over_rect)
+
+        # קבלת מיקום העכבר
+        mouse_x, mouse_y = pygame.mouse.get_pos()
 
         # כפתור Restart
         restart_button = pygame.Rect(self.width // 2 - 150, self.height // 2 - 50, 300, 70)
-        pygame.draw.rect(self.screen, self.GREEN, restart_button, border_radius=15)
+        restart_color = self.GREEN if not restart_button.collidepoint(mouse_x, mouse_y) else (0, 200, 0)
+        pygame.draw.rect(self.screen, restart_color, restart_button, border_radius=15)
+        pygame.draw.rect(self.screen, self.WHITE, restart_button, width=3, border_radius=15)
         restart_text = pygame.font.SysFont("Arial", 48).render("Restart", True, self.WHITE)
         restart_text_rect = restart_text.get_rect(center=restart_button.center)
         self.screen.blit(restart_text, restart_text_rect)
 
         # כפתור Main Menu
         main_menu_button = pygame.Rect(self.width // 2 - 150, self.height // 2 + 50, 300, 70)
-        pygame.draw.rect(self.screen, self.BLUE, main_menu_button, border_radius=15)
+        main_menu_color = self.BLUE if not main_menu_button.collidepoint(mouse_x, mouse_y) else (0, 0, 200)
+        pygame.draw.rect(self.screen, main_menu_color, main_menu_button, border_radius=15)
+        pygame.draw.rect(self.screen, self.WHITE, main_menu_button, width=3, border_radius=15)
         main_menu_text = pygame.font.SysFont("Arial", 48).render("Main Menu", True, self.WHITE)
         main_menu_text_rect = main_menu_text.get_rect(center=main_menu_button.center)
         self.screen.blit(main_menu_text, main_menu_text_rect)
@@ -355,36 +383,105 @@ class Graphics:
 
     def draw_main_menu(self):
         """
-        Draw the main menu with larger buttons for Play, Quit, and Train AI.
+        Draw the main menu with larger buttons for Play, Quit, and Train AI, and decorative blocks in the background.
         """
+        self.frame_count += 1  # עדכון מונה הפריימים
+
+        # התחלפות הבלוקים ברקע כל 60 פריימים
+        if self.frame_count % 60 == 0 or not self.background_blocks:
+            self._generate_background_blocks()
+
         self.screen.fill(self.DARK_BLUE)
 
+        # ציור הבלוקים ברקע
+        self._draw_background_blocks()
+
+        # כותרת המשחק
         font = pygame.font.SysFont("Arial", 72, bold=True)
         title_text = font.render("Block Blast Game", True, self.GOLD_COLOR)
         title_rect = title_text.get_rect(center=(self.width // 2, self.height // 4))
+
+        # רקע לכותרת
+        background_rect = pygame.Rect(
+            title_rect.x - 20, title_rect.y - 20,
+            title_rect.width + 40, title_rect.height + 40
+        )
+        pygame.draw.rect(self.screen, self.DARKER_BLUE, background_rect, border_radius=15)
+        pygame.draw.rect(self.screen, self.GOLD_COLOR, background_rect, width=5, border_radius=15)
         self.screen.blit(title_text, title_rect)
 
+        # קבלת מיקום העכבר
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
         # כפתור Play
-        play_button = pygame.Rect(self.width // 2 - 150, self.height // 2 - 100, 300, 70)  # כפתור גדול יותר
-        pygame.draw.rect(self.screen, self.GREEN, play_button, border_radius=15)
-        play_text = pygame.font.SysFont("Arial", 48).render("Play", True, self.WHITE)  # טקסט גדול יותר
+        play_button = pygame.Rect(self.width // 2 - 150, self.height // 2 - 100, 300, 70)
+        play_color = self.GREEN if not play_button.collidepoint(mouse_x, mouse_y) else (0, 200, 0)
+        pygame.draw.rect(self.screen, play_color, play_button, border_radius=15)
+        pygame.draw.rect(self.screen, self.WHITE, play_button, width=3, border_radius=15)
+        play_text = pygame.font.SysFont("Arial", 48).render("Play", True, self.WHITE)
         play_text_rect = play_text.get_rect(center=play_button.center)
         self.screen.blit(play_text, play_text_rect)
 
         # כפתור Train AI
-        train_button = pygame.Rect(self.width // 2 - 150, self.height // 2, 300, 70)  # כפתור גדול יותר
-        pygame.draw.rect(self.screen, self.BLUE, train_button, border_radius=15)
-        train_text = pygame.font.SysFont("Arial", 48).render("Train AI", True, self.WHITE)  # טקסט גדול יותר
+        train_button = pygame.Rect(self.width // 2 - 150, self.height // 2, 300, 70)
+        train_color = self.BLUE if not train_button.collidepoint(mouse_x, mouse_y) else (0, 0, 200)
+        pygame.draw.rect(self.screen, train_color, train_button, border_radius=15)
+        pygame.draw.rect(self.screen, self.WHITE, train_button, width=3, border_radius=15)
+        train_text = pygame.font.SysFont("Arial", 48).render("Train AI", True, self.WHITE)
         train_text_rect = train_text.get_rect(center=train_button.center)
         self.screen.blit(train_text, train_text_rect)
 
         # כפתור Quit
-        quit_button = pygame.Rect(self.width // 2 - 150, self.height // 2 + 100, 300, 70)  # כפתור גדול יותר
-        pygame.draw.rect(self.screen, self.RED, quit_button, border_radius=15)
-        quit_text = pygame.font.SysFont("Arial", 48).render("Quit", True, self.WHITE)  # טקסט גדול יותר
+        quit_button = pygame.Rect(self.width // 2 - 150, self.height // 2 + 100, 300, 70)
+        quit_color = self.RED if not quit_button.collidepoint(mouse_x, mouse_y) else (200, 0, 0)
+        pygame.draw.rect(self.screen, quit_color, quit_button, border_radius=15)
+        pygame.draw.rect(self.screen, self.WHITE, quit_button, width=3, border_radius=15)
+        quit_text = pygame.font.SysFont("Arial", 48).render("Quit", True, self.WHITE)
         quit_text_rect = quit_text.get_rect(center=quit_button.center)
         self.screen.blit(quit_text, quit_text_rect)
 
         pygame.display.flip()
 
         return play_button, train_button, quit_button
+
+    def _generate_background_blocks(self):
+        """
+        Generate random blocks for the background.
+        """
+        block_size = int(self.GRID_SIZE)  # גודל הבלוקים כמו במשחק הרגיל
+        spacing = int(self.GRID_SIZE * 3)  # מרחק בין הבלוקים
+        colors = [self.RED, self.YELLOW, self.ORANGE, self.GREEN, self.BLUE, self.PURPLE]
+
+        # דוגמאות של צורות בלוקים
+        block_shapes = [
+            [[1, 1], [1, 1]],  # ריבוע
+            [[1, 1, 1], [0, 1, 0]],  # צורת T
+            [[1, 1, 1, 1]],  # קו אופקי
+            [[1, 0], [1, 0], [1, 1]],  # צורת L
+            [[0, 1], [0, 1], [1, 1]]  # צורת הפוכה של L
+        ]
+
+        blocks = []
+        for y in range(0, int(self.height), spacing):
+            for x in range(0, int(self.width), spacing):
+                shape = random.choice(block_shapes)  # בחירת צורה רנדומלית
+                color = random.choice(colors)  # בחירת צבע רנדומלי
+                blocks.append((shape, color, x, y))
+        self.background_blocks = blocks
+
+    def _draw_background_blocks(self):
+        """
+        Draw the current background blocks.
+        """
+        block_size = int(self.GRID_SIZE)  # גודל הבלוקים כמו במשחק הרגיל
+        for shape, color, x, y in self.background_blocks:
+            for row_idx, row in enumerate(shape):
+                for col_idx, cell in enumerate(row):
+                    if cell == 1:  # אם התא פעיל בצורת הבלוק
+                        rect = pygame.Rect(
+                            x + col_idx * block_size + self.GRID_MARGIN,
+                            y + row_idx * block_size + self.GRID_MARGIN,
+                            block_size - self.GRID_MARGIN,
+                            block_size - self.GRID_MARGIN
+                        )
+                        pygame.draw.rect(self.screen, color, rect, border_radius=5)

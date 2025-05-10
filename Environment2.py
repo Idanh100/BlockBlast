@@ -233,5 +233,3 @@ class Environment:
                     if self.is_valid_move(state, block, (x, y)):
                         return False  # יש מקום להניח לפחות בלוק אחד
         return True  # אין מקום להניח אף בלוק
-
-
