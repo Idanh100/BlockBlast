@@ -12,25 +12,45 @@ class Game:
     def play(self):
         graphics = Graphics()
         env = Environment(State())
-        env.reset()
         player = HumanAgent()
         run = True
+
+        # מסך פתיחה
+        menu_action = self.main_menu(graphics)
+        if menu_action == "QUIT":
+            run = False
+        elif menu_action == "TRAIN":
+            print("Train AI selected. (Feature not implemented yet)")
+            run = False  # סגור את המשחק או החלף למסך אחר
+
+        env.reset()
         state = env.state
         game_over = False
 
         while run:
             if game_over:
-                graphics.draw_game_over(state)
+                # הצגת מסך Game Over עם כפתורים
+                restart_button, main_menu_button = graphics.draw_game_over(state)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         run = False
-                    elif event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_r:  # התחלת משחק חדש
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        mouse_x, mouse_y = event.pos
+                        if restart_button.collidepoint(mouse_x, mouse_y):  # התחלת משחק חדש
                             env.reset()
                             state = env.state
                             game_over = False
-                        elif event.key == pygame.K_q:  # יציאה מהמשחק
-                            run = False
+                        elif main_menu_button.collidepoint(mouse_x, mouse_y):  # חזרה לתפריט הראשי
+                            menu_action = self.main_menu(graphics)
+                            if menu_action == "QUIT":
+                                run = False
+                            elif menu_action == "PLAY":
+                                env.reset()
+                                state = env.state
+                                game_over = False
+                            elif menu_action == "TRAIN":
+                                print("Train AI selected. (Feature not implemented yet)")
+                                run = False
             else:
                 graphics.draw_game(state, player.selected_block)
                 pygame.display.flip()
@@ -44,6 +64,26 @@ class Game:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         run = False
+
+    def main_menu(self, graphics):
+        """
+        Display the main menu and handle button clicks.
+        """
+        while True:
+            play_button, train_button, quit_button = graphics.draw_main_menu()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return "QUIT"
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = event.pos
+                    if play_button.collidepoint(mouse_x, mouse_y):
+                        return "PLAY"
+                    elif train_button.collidepoint(mouse_x, mouse_y):
+                        return "TRAIN"
+                    elif quit_button.collidepoint(mouse_x, mouse_y):
+
+                        return "QUIT"
 
 
 if __name__ == "__main__":

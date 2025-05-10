@@ -158,29 +158,33 @@ class Graphics:
 
     def draw_game_over(self, state):
         """
-        Draw the Game Over screen with the final score and other details.
-
-        Args:
-            state (State): The current game state.
+        Draw the Game Over screen with options to restart or return to the main menu.
         """
         self.screen.fill(self.DARK_BLUE)
 
+        # טקסט Game Over
         font = pygame.font.SysFont("Arial", 72, bold=True)
         game_over_text = font.render("Game Over", True, self.RED)
-        text_rect = game_over_text.get_rect(center=(self.width // 2, self.height // 3))
-        self.screen.blit(game_over_text, text_rect)
+        game_over_rect = game_over_text.get_rect(center=(self.width // 2, self.height // 4))
+        self.screen.blit(game_over_text, game_over_rect)
 
-        font = pygame.font.SysFont("Arial", 48)
-        score_text = font.render(f"Final Score: {state.score}", True, self.WHITE)
-        score_rect = score_text.get_rect(center=(self.width // 2, self.height // 2))
-        self.screen.blit(score_text, score_rect)
+        # כפתור Restart
+        restart_button = pygame.Rect(self.width // 2 - 150, self.height // 2 - 50, 300, 70)
+        pygame.draw.rect(self.screen, self.GREEN, restart_button, border_radius=15)
+        restart_text = pygame.font.SysFont("Arial", 48).render("Restart", True, self.WHITE)
+        restart_text_rect = restart_text.get_rect(center=restart_button.center)
+        self.screen.blit(restart_text, restart_text_rect)
 
-        font = pygame.font.SysFont("Arial", 36)
-        restart_text = font.render("Press R to Restart or Q to Quit", True, self.YELLOW)
-        restart_rect = restart_text.get_rect(center=(self.width // 2, self.height // 1.5))
-        self.screen.blit(restart_text, restart_rect)
+        # כפתור Main Menu
+        main_menu_button = pygame.Rect(self.width // 2 - 150, self.height // 2 + 50, 300, 70)
+        pygame.draw.rect(self.screen, self.BLUE, main_menu_button, border_radius=15)
+        main_menu_text = pygame.font.SysFont("Arial", 48).render("Main Menu", True, self.WHITE)
+        main_menu_text_rect = main_menu_text.get_rect(center=main_menu_button.center)
+        self.screen.blit(main_menu_text, main_menu_text_rect)
 
         pygame.display.flip()
+
+        return restart_button, main_menu_button
 
     def _highlight_potential_placement(self, state, block):
         """
@@ -348,3 +352,39 @@ class Graphics:
 
             # ציור הטקסט
             self.screen.blit(combo_text, text_rect)
+
+    def draw_main_menu(self):
+        """
+        Draw the main menu with larger buttons for Play, Quit, and Train AI.
+        """
+        self.screen.fill(self.DARK_BLUE)
+
+        font = pygame.font.SysFont("Arial", 72, bold=True)
+        title_text = font.render("Block Blast Game", True, self.GOLD_COLOR)
+        title_rect = title_text.get_rect(center=(self.width // 2, self.height // 4))
+        self.screen.blit(title_text, title_rect)
+
+        # כפתור Play
+        play_button = pygame.Rect(self.width // 2 - 150, self.height // 2 - 100, 300, 70)  # כפתור גדול יותר
+        pygame.draw.rect(self.screen, self.GREEN, play_button, border_radius=15)
+        play_text = pygame.font.SysFont("Arial", 48).render("Play", True, self.WHITE)  # טקסט גדול יותר
+        play_text_rect = play_text.get_rect(center=play_button.center)
+        self.screen.blit(play_text, play_text_rect)
+
+        # כפתור Train AI
+        train_button = pygame.Rect(self.width // 2 - 150, self.height // 2, 300, 70)  # כפתור גדול יותר
+        pygame.draw.rect(self.screen, self.BLUE, train_button, border_radius=15)
+        train_text = pygame.font.SysFont("Arial", 48).render("Train AI", True, self.WHITE)  # טקסט גדול יותר
+        train_text_rect = train_text.get_rect(center=train_button.center)
+        self.screen.blit(train_text, train_text_rect)
+
+        # כפתור Quit
+        quit_button = pygame.Rect(self.width // 2 - 150, self.height // 2 + 100, 300, 70)  # כפתור גדול יותר
+        pygame.draw.rect(self.screen, self.RED, quit_button, border_radius=15)
+        quit_text = pygame.font.SysFont("Arial", 48).render("Quit", True, self.WHITE)  # טקסט גדול יותר
+        quit_text_rect = quit_text.get_rect(center=quit_button.center)
+        self.screen.blit(quit_text, quit_text_rect)
+
+        pygame.display.flip()
+
+        return play_button, train_button, quit_button
