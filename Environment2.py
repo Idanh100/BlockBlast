@@ -58,9 +58,14 @@ class Environment:
             "3x3": [[1, 1, 1], [1, 1, 1], [1, 1, 1]]
         }
     
-    def reset (self):
-        self.state = State()
-        self.set_random_block()
+    def reset(self):
+        """
+        Reset the game state, including the board and blocks.
+        """
+        self.state = State()  # יצירת אובייקט חדש של State
+        self.set_random_block()  # יצירת בלוקים חדשים
+        print("Game has been reset.")
+        print(self.state.Board)  # הדפסת הלוח המאופס לצורך בדיקה
 
     def set_random_block(self, state: State = None):
         """Get a random shape from all available shapes."""
@@ -216,5 +221,24 @@ class Environment:
                 row[col_index] = 0  # ריקון העמודה
             state.score += 10  # ניקוד לעמודה
             print(f"Column {col_index} exploded! Score increased by 10. Total score: {state.score}")
+
+    def is_game_over(self, state: State) -> bool:
+        """
+        Check if the game is over. The game ends when there is no space on the board
+        to place any of the current blocks.
+
+        Args:
+            state (State): The current game state.
+
+        Returns:
+            bool: True if the game is over, False otherwise.
+        """
+        board = state.Board
+        for block in state.Blocks:
+            for y in range(len(board)):
+                for x in range(len(board[0])):
+                    if self.is_valid_move(state, block, (x, y)):
+                        return False  # יש מקום להניח לפחות בלוק אחד
+        return True  # אין מקום להניח אף בלוק
 
 

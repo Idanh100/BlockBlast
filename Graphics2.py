@@ -142,3 +142,29 @@ class Graphics:
 
         # ציור הטקסט
         self.screen.blit(score_text, text_rect)
+
+    def draw_game_over(self, state):
+        """
+        Draw the Game Over screen with the final score and other details.
+
+        Args:
+            state (State): The current game state.
+        """
+        self.screen.fill(self.DARK_BLUE)
+
+        font = pygame.font.SysFont("Arial", 72, bold=True)
+        game_over_text = font.render("Game Over", True, self.RED)
+        text_rect = game_over_text.get_rect(center=(self.width // 2, self.height // 3))
+        self.screen.blit(game_over_text, text_rect)
+
+        font = pygame.font.SysFont("Arial", 48)
+        score_text = font.render(f"Final Score: {state.score}", True, self.WHITE)
+        score_rect = score_text.get_rect(center=(self.width // 2, self.height // 2))
+        self.screen.blit(score_text, score_rect)
+
+        font = pygame.font.SysFont("Arial", 36)
+        restart_text = font.render("Press R to Restart or Q to Quit", True, self.YELLOW)
+        restart_rect = restart_text.get_rect(center=(self.width // 2, self.height // 1.5))
+        self.screen.blit(restart_text, restart_rect)
+
+        pygame.display.flip()
