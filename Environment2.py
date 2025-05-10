@@ -101,10 +101,16 @@ class Environment:
             # קיבוע הבלוק ללוח
             self.fix_block_to_board(state, block, (grid_x, grid_y))
             print("Move is valid. Block fixed to the board.")
+
+            # בדיקה אם יש שורות שצריך לפוצץ
+            self.check_and_explode_rows(state)
         else:
             # החזרת הבלוק למקומו ההתחלתי
             block.rect = initial_position
             print("Move is invalid. Block reset to initial position.")
+
+        # בדיקה אם צריך ליצור בלוקים חדשים
+        self.check_and_generate_blocks()
 
     def is_valid_move(self, state: State, block: Block, position: tuple) -> bool:
         """
@@ -149,6 +155,7 @@ class Environment:
         """
         board = state.Board
         grid_x, grid_y = position  # המיקום על הלוח (קואורדינטות רשת)
+        placed_cells = 0  # סופר את כמות המשבצות שהונחו
 
         # עדכון הלוח עם הבלוק
         for y, row in enumerate(block.shape):
@@ -156,12 +163,43 @@ class Environment:
                 if cell == 1:  # תא פעיל בבלוק
                     board_x = grid_x + x
                     board_y = grid_y + y
-                    if 0 <= board_x < board.shape[1] and 0 <= board_y < board.shape[0]:
+                    if 0 <= board_x < len(board[0]) and 0 <= board_y < len(board):
                         board[board_y][board_x] = block.color_id  # עדכון התא בלוח עם מזהה הצבע
+                        placed_cells += 1  # עדכון כמות המשבצות שהונחו
+
+        # עדכון הניקוד
+        state.score += placed_cells
 
         # הסרת הבלוק מרשימת הבלוקים
         if block in state.Blocks:
             state.Blocks.remove(block)
-        print("Block fixed to the board.")
+        print(f"Block fixed to the board. Score increased by {placed_cells}. Total score: {state.score}")
+
+    def check_and_generate_blocks(self):
+        """
+        Check if there are no more blocks available and generate new ones if needed.
+        """
+        if not self.state.Blocks:  # אם אין בלוקים ברשימה
+            self.set_random_block()
+            print("Generated new blocks.")
+
+    def check_and_explode_rows(self, state: State):
+        """
+        Check for full rows, remove them, and update the score.
+
+        Args:
+            state (State): The current game state.
+        """
+        board = state.Board
+        rows_to_explode = []
+        for y, row in enumerate(board):
+            if all(cell != 0 for cell in row):  # אם כל התאים בשורה מלאים
+                rows_to_explode.append(y)
+
+        if rows_to_explode:
+            for row_index in rows_to_explode:
+                board[row_index] = [0] * len(board[row_index])  # ריקון השורה
+                state.score += 10  # עדכון הניקוד
+                print(f"Row {row_index} exploded! Score increased by 10. Total score: {state.score}")
 
 

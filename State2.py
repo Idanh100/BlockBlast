@@ -6,6 +6,8 @@ class State:
     def __init__(self):
         self.Board = np.zeros((8, 8))
         self.Blocks = ()
+        self.score = 0  # אתחול התכונה score
+
         print(self.Board)
 
     

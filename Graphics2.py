@@ -31,13 +31,18 @@ class Graphics:
         self.INVALID_HIGHLIGHT = (150, 50, 50, 128)
         self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)
         self.GOLD_COLOR = (255, 215, 0)
-
-    
+           
     def draw_game(self, state):
+        """
+        Draw the entire game state, including the board, blocks, and score.
+        """
         self.screen.fill(self.DARK_BLUE)
         self._draw_grid(state)
         for block in state.Blocks:
             self._draw_block(block)
+        
+        # ציור הניקוד בצד שמאל במרכז
+        self._draw_score(state.score)
 
     def _draw_grid(self, state):
         """
@@ -111,3 +116,29 @@ class Graphics:
             (180, 100, 240)   # PURPLE
         ]
         return colors[(int(color_id)) % len(colors)]  # המרת color_id ל-int
+
+    def _draw_score(self, score):
+        """
+        Draw the score at the top-left corner of the screen, aligned with the top of the grid,
+        and centered between the left edge of the screen and the left edge of the grid.
+        """
+        font = pygame.font.SysFont("Arial", 48, bold=True)  # גופן גדול ובולט
+        score_text = font.render(f"Score: {score}", True, self.WHITE)
+        text_rect = score_text.get_rect()
+
+        # חישוב המיקום: מרכז בין הקצה השמאלי של המסך לקצה השמאלי של הלוח
+        center_x = self.GRID_ORIGIN_X / 2
+        text_rect.midtop = (center_x, self.GRID_ORIGIN_Y)  # מיקום בגובה הקצה העליון של הלוח
+
+        # רקע לניקוד
+        background_rect = pygame.Rect(
+            text_rect.x - 10, text_rect.y - 10,
+            text_rect.width + 20, text_rect.height + 20
+        )
+        pygame.draw.rect(self.screen, self.LIGHT_BLUE, background_rect, border_radius=15)
+
+        # מסגרת מסביב לרקע
+        pygame.draw.rect(self.screen, self.GOLD_COLOR, background_rect, width=3, border_radius=15)
+
+        # ציור הטקסט
+        self.screen.blit(score_text, text_rect)
