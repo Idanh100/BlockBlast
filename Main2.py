@@ -30,7 +30,7 @@ class Game:
         while run:
             if game_over:
                 restart_button, main_menu_button = graphics.draw_game_over(state)
-                for event in pygame.event.get():
+                for event in pygame.event.get():    
                     if event.type == pygame.QUIT:
                         run = False
                     elif event.type == pygame.MOUSEBUTTONDOWN:

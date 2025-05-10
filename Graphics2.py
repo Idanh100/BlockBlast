@@ -136,33 +136,34 @@ class Graphics:
 
     def _draw_score(self, score):
         """
-        Draw the score at the top-left corner of the screen, aligned with the top of the grid,
-        and centered between the left edge of the screen and the left edge of the grid.
+        Draw the score on the right side of the screen, aligned with the top of the grid,
+        and centered between the right edge of the grid and the right edge of the screen.
         """
         font = pygame.font.SysFont("Arial", 48, bold=True)  # גופן גדול ובולט
         score_text = font.render(f"Score: {score}", True, self.WHITE)
         text_rect = score_text.get_rect()
 
-        # חישוב המיקום: מרכז בין הקצה השמאלי של המסך לקצה השמאלי של הלוח
-        center_x = self.GRID_ORIGIN_X / 2
-        text_rect.midtop = (center_x, self.GRID_ORIGIN_Y)  # מיקום בגובה הקצה העליון של הלוח
+        # חישוב המיקום: מרכז בין הקצה הימני של הלוח לקצה הימני של המסך
+        grid_right_x = self.GRID_ORIGIN_X + self.GRID_SIZE * 8  # הקצה הימני של הלוח
+        center_x = (grid_right_x + self.width) / 2  # מרכז בין הקצה הימני של הלוח לקצה המסך
+        text_rect.midtop = (center_x, self.GRID_ORIGIN_Y + 40)  # הוספת מרווח של 40 פיקסלים למטה
 
         # רקע לניקוד
         background_rect = pygame.Rect(
-            text_rect.x - 10, text_rect.y - 10,
-            text_rect.width + 20, text_rect.height + 20
+            text_rect.x - 20, text_rect.y - 20,  # הוספת שוליים מסביב לטקסט
+            text_rect.width + 40, text_rect.height + 40
         )
-        pygame.draw.rect(self.screen, self.LIGHT_BLUE, background_rect, border_radius=15)
+        pygame.draw.rect(self.screen, self.DARKER_BLUE, background_rect, border_radius=15)
 
         # מסגרת מסביב לרקע
-        pygame.draw.rect(self.screen, self.GOLD_COLOR, background_rect, width=3, border_radius=15)
+        pygame.draw.rect(self.screen, self.GOLD_COLOR, background_rect, width=5, border_radius=15)
 
         # ציור הטקסט
         self.screen.blit(score_text, text_rect)
 
     def draw_game_over(self, state):
         """
-        Draw the Game Over screen with options to restart or return to the main menu.
+        Draw the Game Over screen with options to restart, return to the main menu, or quit the game.
         """
         self.frame_count += 1  # עדכון מונה הפריימים
 
@@ -175,19 +176,37 @@ class Graphics:
         # ציור הבלוקים ברקע
         self._draw_background_blocks()
 
-        # טקסט Game Over
+        # טקסט Game Over עם מסגרת
         font = pygame.font.SysFont("Arial", 72, bold=True)
         game_over_text = font.render("Game Over", True, self.RED)
         game_over_rect = game_over_text.get_rect(center=(self.width // 2, self.height // 4))
 
-        # רקע לכותרת
-        background_rect = pygame.Rect(
+        # רקע לכותרת Game Over
+        game_over_background = pygame.Rect(
             game_over_rect.x - 20, game_over_rect.y - 20,
             game_over_rect.width + 40, game_over_rect.height + 40
         )
-        pygame.draw.rect(self.screen, self.DARKER_BLUE, background_rect, border_radius=15)
-        pygame.draw.rect(self.screen, self.RED, background_rect, width=5, border_radius=15)
+        pygame.draw.rect(self.screen, self.DARKER_BLUE, game_over_background, border_radius=15)
+        pygame.draw.rect(self.screen, self.GOLD_COLOR, game_over_background, width=5, border_radius=15)
+
+        # ציור הטקסט Game Over
         self.screen.blit(game_over_text, game_over_rect)
+
+        # הצגת הניקוד עם מסגרת
+        score_font = pygame.font.SysFont("Arial", 48, bold=True)
+        score_text = score_font.render(f"Your Score: {state.score}", True, self.WHITE)
+        score_rect = score_text.get_rect(center=(self.width // 2, self.height // 4 + 100))
+
+        # רקע לניקוד
+        score_background = pygame.Rect(
+            score_rect.x - 20, score_rect.y - 20,
+            score_rect.width + 40, score_rect.height + 40
+        )
+        pygame.draw.rect(self.screen, self.DARKER_BLUE, score_background, border_radius=15)
+        pygame.draw.rect(self.screen, self.GOLD_COLOR, score_background, width=5, border_radius=15)
+
+        # ציור הטקסט של הניקוד
+        self.screen.blit(score_text, score_rect)
 
         # קבלת מיקום העכבר
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -210,9 +229,18 @@ class Graphics:
         main_menu_text_rect = main_menu_text.get_rect(center=main_menu_button.center)
         self.screen.blit(main_menu_text, main_menu_text_rect)
 
+        # כפתור Quit
+        quit_button = pygame.Rect(self.width // 2 - 150, self.height // 2 + 150, 300, 70)
+        quit_color = self.RED if not quit_button.collidepoint(mouse_x, mouse_y) else (200, 0, 0)
+        pygame.draw.rect(self.screen, quit_color, quit_button, border_radius=15)
+        pygame.draw.rect(self.screen, self.WHITE, quit_button, width=3, border_radius=15)
+        quit_text = pygame.font.SysFont("Arial", 48).render("Quit", True, self.WHITE)
+        quit_text_rect = quit_text.get_rect(center=quit_button.center)
+        self.screen.blit(quit_text, quit_text_rect)
+
         pygame.display.flip()
 
-        return restart_button, main_menu_button
+        return restart_button, main_menu_button, quit_button
 
     def _highlight_potential_placement(self, state, block):
         """
@@ -356,17 +384,17 @@ class Graphics:
 
     def _draw_combo_animation(self, state):
         """
-        Draw a combo animation below the score if the player is in a combo streak.
+        Draw the combo animation below the score if a combo is active.
         """
-        if state.in_combo and state.combo_count >= 2:  # הצגת האנימציה רק מ-x2 ומעלה
+        if state.in_combo and state.combo_count >= 2:
             font = pygame.font.SysFont("Arial", 36, bold=True)
             combo_text = font.render(f"Combo x{state.combo_count}!", True, self.GOLD_COLOR)
             text_rect = combo_text.get_rect()
 
-            # מיקום האנימציה: אותו X של הניקוד, מתחתיו
-            score_x = self.GRID_ORIGIN_X / 2
-            score_y = self.GRID_ORIGIN_Y
-            text_rect.midtop = (score_x, score_y + 60)  # 60 פיקסלים מתחת לניקוד
+            # מיקום האנימציה: מתחת לניקוד בצד ימין
+            grid_right_x = self.GRID_ORIGIN_X + self.GRID_SIZE * 8  # הקצה הימני של הלוח
+            center_x = (grid_right_x + self.width) / 2  # מרכז בין הקצה הימני של הלוח לקצה המסך
+            text_rect.midtop = (center_x, self.GRID_ORIGIN_Y + 80)  # 80 פיקסלים מתחת לניקוד
 
             # רקע לאנימציה
             background_rect = pygame.Rect(
