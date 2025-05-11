@@ -165,6 +165,7 @@ class Graphics:
         """
         Draw the Game Over screen with options to restart, return to the main menu, or quit the game.
         """
+        self.screen.fill(self.DARK_BLUE)
         self.frame_count += 1  # עדכון מונה הפריימים
 
         # התחלפות הבלוקים ברקע כל 60 פריימים
@@ -174,7 +175,7 @@ class Graphics:
         self.screen.fill(self.DARK_BLUE)
 
         # ציור הבלוקים ברקע
-        self._draw_background_blocks()
+        self. _draw_background_blocks()
 
         # טקסט Game Over עם מסגרת
         font = pygame.font.SysFont("Arial", 72, bold=True)
@@ -188,8 +189,6 @@ class Graphics:
         )
         pygame.draw.rect(self.screen, self.DARKER_BLUE, game_over_background, border_radius=15)
         pygame.draw.rect(self.screen, self.GOLD_COLOR, game_over_background, width=5, border_radius=15)
-
-        # ציור הטקסט Game Over
         self.screen.blit(game_over_text, game_over_rect)
 
         # הצגת הניקוד עם מסגרת
@@ -204,8 +203,6 @@ class Graphics:
         )
         pygame.draw.rect(self.screen, self.DARKER_BLUE, score_background, border_radius=15)
         pygame.draw.rect(self.screen, self.GOLD_COLOR, score_background, width=5, border_radius=15)
-
-        # ציור הטקסט של הניקוד
         self.screen.blit(score_text, score_rect)
 
         # קבלת מיקום העכבר
@@ -229,18 +226,9 @@ class Graphics:
         main_menu_text_rect = main_menu_text.get_rect(center=main_menu_button.center)
         self.screen.blit(main_menu_text, main_menu_text_rect)
 
-        # כפתור Quit
-        quit_button = pygame.Rect(self.width // 2 - 150, self.height // 2 + 150, 300, 70)
-        quit_color = self.RED if not quit_button.collidepoint(mouse_x, mouse_y) else (200, 0, 0)
-        pygame.draw.rect(self.screen, quit_color, quit_button, border_radius=15)
-        pygame.draw.rect(self.screen, self.WHITE, quit_button, width=3, border_radius=15)
-        quit_text = pygame.font.SysFont("Arial", 48).render("Quit", True, self.WHITE)
-        quit_text_rect = quit_text.get_rect(center=quit_button.center)
-        self.screen.blit(quit_text, quit_text_rect)
-
         pygame.display.flip()
 
-        return restart_button, main_menu_button, quit_button
+        return restart_button, main_menu_button
 
     def _highlight_potential_placement(self, state, block):
         """
@@ -394,7 +382,7 @@ class Graphics:
             # מיקום האנימציה: מתחת לניקוד בצד ימין
             grid_right_x = self.GRID_ORIGIN_X + self.GRID_SIZE * 8  # הקצה הימני של הלוח
             center_x = (grid_right_x + self.width) / 2  # מרכז בין הקצה הימני של הלוח לקצה המסך
-            text_rect.midtop = (center_x, self.GRID_ORIGIN_Y + 80)  # 80 פיקסלים מתחת לניקוד
+            text_rect.midtop = (center_x, self.GRID_ORIGIN_Y + 120)  # 120 פיקסלים מתחת לניקוד (הוזז למטה)
 
             # רקע לאנימציה
             background_rect = pygame.Rect(
@@ -422,7 +410,7 @@ class Graphics:
         self.screen.fill(self.DARK_BLUE)
 
         # ציור הבלוקים ברקע
-        self._draw_background_blocks()
+        self. _draw_background_blocks()
 
         # כותרת המשחק
         font = pygame.font.SysFont("Arial", 72, bold=True)
