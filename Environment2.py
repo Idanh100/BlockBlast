@@ -17,8 +17,6 @@ class Environment:
         self.GRID_ORIGIN_X = (self.width / 2) - (self.GRID_SIZE * 4)
         self.GRID_MARGIN = 4
 
-
-
     def all_shapes(self):
         """Generate all possible block shapes for the game."""
         return {
@@ -64,8 +62,6 @@ class Environment:
         """
         self.state = State()  # יצירת אובייקט חדש של State
         self.set_random_block()  # יצירת בלוקים חדשים
-        print("Game has been reset.")
-        print(self.state.Board)  # הדפסת הלוח המאופס לצורך בדיקה
 
     def set_random_block(self, state: State = None):
         if state is None:
@@ -96,14 +92,12 @@ class Environment:
         # בדיקת חוקיות המהלך
         if self.is_valid_move(state, block, (grid_x, grid_y)):
             self.fix_block_to_board(state, block, (grid_x, grid_y))
-            print("Move is valid. Block fixed to the board.")
 
             # בדיקה אם יש שורות שצריך לפוצץ
             self.check_and_explode_rows(state)
         else:
             # החזרת הבלוק למיקומו ההתחלתי הקבוע
             block.rect = block.initial_position.copy()
-            print("Move is invalid. Block reset to its initial position.")
 
         # בדיקה אם צריך ליצור בלוקים חדשים
         self.check_and_generate_blocks()
@@ -169,7 +163,6 @@ class Environment:
         # הסרת הבלוק מרשימת הבלוקים
         if block in state.Blocks:
             state.Blocks.remove(block)
-        print(f"Block fixed to the board. Score increased by {placed_cells}. Total score: {state.score}")
 
     def check_and_generate_blocks(self):
         """
@@ -177,7 +170,6 @@ class Environment:
         """
         if not self.state.Blocks:  # אם אין בלוקים ברשימה
             self.set_random_block()
-            print("Generated new blocks.")
 
     def check_and_explode_rows(self, state: State):
         """

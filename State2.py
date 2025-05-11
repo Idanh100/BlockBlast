@@ -11,5 +11,3 @@ class State:
         self.turns_since_last_explosion = 0  # מספר התורות מאז הפיצוץ האחרון
         self.in_combo = False  # האם אנחנו ב-Combo
 
-        print(self.Board)
-
