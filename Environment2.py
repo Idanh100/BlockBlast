@@ -1,8 +1,12 @@
 import pygame
 import random
+import copy
+import numpy as np
+from types import SimpleNamespace
 from Block import Block
 from State2 import State
 from Graphics2 import Graphics
+import torch
 
 class Environment:
     def __init__(self, state):
@@ -105,32 +109,28 @@ class Environment:
     def is_valid_move(self, state: State, block: Block, position: tuple) -> bool:
         """
         Check if placing the block at the given position is a valid move.
-        
-        Args:
-            state (State): The current game state.
-            block (Block): The block to place.
-            position (tuple): The (x, y) position where the block is to be placed.
-        
-        Returns:
-            bool: True if the move is valid, False otherwise.
         """
         board = state.Board
         grid_x, grid_y = position  # המיקום על הלוח (קואורדינטות רשת)
 
-        # עבור כל תא בבלוק
-        for y, row in enumerate(block.shape):
-            for x, cell in enumerate(row):
-                if cell == 1:  # תא פעיל בבלוק
-                    board_x = grid_x + x
-                    board_y = grid_y + y
+        # Support both Block and SimpleNamespace-like objects that carry a `shape` attribute
+        shape = getattr(block, 'shape', None)
+        if shape is None:
+            return False
 
-                    # בדיקה אם התא חורג מגבולות הלוח
-                    if board_x < 0 or board_x >= board.shape[1] or board_y < 0 or board_y >= board.shape[0]:
-                        return False
+        # Convert shape to numpy array for fast, vectorized checks
+        shape_arr = np.array(shape)
+        h, w = shape_arr.shape
 
-                    # בדיקה אם התא כבר תפוס
-                    if board[board_y][board_x] != 0:
-                        return False
+        # Quick boundary check: shape must fully fit inside the board at the given position
+        if grid_x < 0 or grid_y < 0 or (grid_x + w) > board.shape[1] or (grid_y + h) > board.shape[0]:
+            return False
+
+        # Extract the corresponding board slice and check overlap by elementwise multiply.
+        # If any product is non-zero then an occupied cell would overlap the shape -> invalid.
+        board_slice = board[grid_y:grid_y + h, grid_x:grid_x + w]
+        if np.any(board_slice * shape_arr != 0):
+            return False
 
         return True
 
@@ -225,3 +225,67 @@ class Environment:
                     if self.is_valid_move(state, block, (x, y)):
                         return False  # יש מקום להניח לפחות בלוק אחד
         return True  # אין מקום להניח אף בלוק
+
+    def GetAllPossibleMoves(self, state: State):
+        """
+        החזר את כל המהלכים החוקיים על הלוח הנוכחי עבור כל הצורות האפשריות.
+        """
+        board = state.Board # מגדיר את הלוח הקיים 
+        shapes = self.all_shapes() #יוצר רשימה של כל הצורות 
+        legal_moves = [] # יוצר רשימה של כל המהלכים החוקיים 
+
+        for name, shape in shapes.items(): # על כל צורה והשם שלה 
+            shape_h = len(shape)
+            shape_w = len(shape[0]) if shape_h > 0 else 0
+
+            # עבור כל מיקום אפשרי שבו תיבת ה-bounding של הצורה נכנסת ללוח
+            max_y = board.shape[0] - shape_h
+            max_x = board.shape[1] - shape_w
+            if max_y < 0 or max_x < 0:
+                continue
+
+            for y in range(0, max_y + 1):
+                for x in range(0, max_x + 1):
+                    dummy = SimpleNamespace(shape=shape)
+                    # בדיקה חוקיות המהלך בעזרת is_valid_move שמתבססת על ה-shape
+                    if self.is_valid_move(state, dummy, (x, y)):
+                        legal_moves.append((name, shape, (x, y)))
+
+        return tuple(legal_moves)
+
+    def AfterState(self, state: State, moves):
+        """
+        קבל את כל המהלכים (כפי שמוחזרים מ-`GetAllPossibleMoves`) והחזר רשימה של
+        כל ה-`State` הפוטנציאליים אשר היו מתקבלים אם השחקן היה מבצע כל מהלך.
+        """
+        resulting_states = []
+        for mv in moves: # mv => (name, shape, (x, y))
+            try:
+                name, shape, pos = mv
+            except Exception:
+                continue
+            x, y = pos
+
+            # העתק עמוק של ה-State כדי לא לשנות את המקור
+            new_state = copy.deepcopy(state)
+
+            # אובייקט דמה המייצג בלוק לצורך הכנסת הצורה אל הלוח
+            dummy_block = SimpleNamespace(shape=shape, color_id=1)
+
+            # עדכון הלוח לפי המהלך (זה יעדכן גם את new_state.score)
+            self.fix_block_to_board(new_state, dummy_block, (x, y))
+
+            # בדיקה ופיצוץ שורות/עמודות במידה וקיימות
+            self.check_and_explode_rows(new_state)
+
+            # אם אין בלוקים ב-new_state, צור חדשים (השתמש ב-set_random_block עם פרמטר)
+            if not new_state.Blocks:
+                self.set_random_block(new_state)
+
+            resulting_states.append(new_state)
+
+        return resulting_states
+    
+    def tensor_shape(self, shape):
+        shape_T = torch.tensor(shape, dtype=torch.float32)
+        return shape_T
