@@ -270,7 +270,7 @@ class Environment:
             new_state = copy.deepcopy(state)
 
             # אובייקט דמה המייצג בלוק לצורך הכנסת הצורה אל הלוח
-            dummy_block = SimpleNamespace(shape=shape, color_id=1)
+            dummy_block = Block(shape, pygame.Rect(0, 0, 0, 0), 1)
 
             # עדכון הלוח לפי המהלך (זה יעדכן גם את new_state.score)
             self.fix_block_to_board(new_state, dummy_block, (x, y))
@@ -289,3 +289,9 @@ class Environment:
     def tensor_shape(self, shape):
         shape_T = torch.tensor(shape, dtype=torch.float32)
         return shape_T
+    
+    def GetAllAfterStates(self, state):
+        all_moves = self.GetAllPossibleMoves(state)
+        all_after_states = self.AfterState(state, all_moves)
+        return tuple(all_after_states)
+        

@@ -10,7 +10,7 @@ class State:
         self.turns_since_last_explosion = 0  # מספר התורות מאז הפיצוץ האחרון
         self.in_combo = False  # האם אנחנו ב-Combo
 
-    def TensorState(self, Board):
+    def TensorState(self, Board): #בונה state בtensor 
         tensor_state = torch.tensor(Board.flatten(), dtype=torch.float32)        
         return tensor_state
 

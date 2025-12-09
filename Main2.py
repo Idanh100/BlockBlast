@@ -3,6 +3,7 @@ from Graphics2 import Graphics
 from State2 import State
 from Environment2 import Environment
 from HumanAgent2 import HumanAgent
+from Ai_Agent import Ai_Agent
 import os
 
 class Game:
@@ -13,7 +14,8 @@ class Game:
         # אתחול רכיבי המשחק
         graphics = Graphics()  # מחלקה שאחראית על הגרפיקה
         env = Environment(State())  # יצירת הסביבה עם מצב התחלתי
-        player = HumanAgent()  # יצירת שחקן אנושי
+        # player = HumanAgent()  # יצירת שחקן אנושי
+        player = Ai_Agent()  # יצירת שחקן Ai_Agent
         run = True  # משתנה בוליאני שמנהל את לולאת המשחק
 
         # מסך פתיחה
