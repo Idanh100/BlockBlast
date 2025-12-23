@@ -3,7 +3,7 @@ from Graphics2 import Graphics
 from State2 import State
 from Environment2 import Environment
 from HumanAgent2 import HumanAgent
-from Ai_Agent import Ai_Agent
+from Ai_Agent2 import Ai_Agent
 import os
 
 class Game:
@@ -65,6 +65,9 @@ class Game:
                     run = False
                 elif action:  # אם השחקן ביצע פעולה
                     env.move(state, action)  # ביצוע הפעולה בסביבה
+                    if env.is_game_over(state):  # בדיקה אם המשחק נגמר
+                        game_over = True  # עדכון מצב סיום המשחק
+                else:  # אם אין פעולה חוקית (למשל, אין מהלכים זמינים)
                     if env.is_game_over(state):  # בדיקה אם המשחק נגמר
                         game_over = True  # עדכון מצב סיום המשחק
                 for event in pygame.event.get():  # טיפול באירועים

@@ -26,7 +26,7 @@ class Ai_Agent:
         self.model = model if model else DQN()  # יוצר DQN אם לא סופקה
         self.selected_block = None  # התאמה לממשק של Main2.py
         self.env = Environment(State())
-        self.epsilon = 0.1  # הסתברות לבחירה אקראית
+        
 
     def get_action(self, state):
         """Get the best action using the DQN model.
@@ -34,13 +34,26 @@ class Ai_Agent:
         Returns:
             tuple: (block, position_in_pixels) if action found, None otherwise
         """
+        moves = self.get_all_moves(state)
+                
+        # בחר מהלך עם ה-Q-value הגבוה ביותר או אקראי עם הסתברות epsilon
+        if random.random() < self.get_epsilon() or len(moves) == 1:
+            # בחירה אקראית
+            best_move = random.choice(moves)
+            return self.move_to_action(best_move)
 
-        '''
-        1. create function get_all_moves
-        2. create function get_all_after_state
-        '''
+        after_state_tensors = self.get_after_states(moves, state)
 
+        with torch.no_grad():  # אל תחשב gradients בהערכה
+            q_values = self.model(after_state_tensors)
 
+        best_idx = torch.argmax(q_values)
+        best_move = moves[best_idx]
+        return self.move_to_action(best_move)
+      
+        
+    
+    def get_all_moves (self, state):
         # קבל את כל המהלכים האפשריים רק עבור הבלוקים הזמינים
         moves = []                          # move to function
         for block in state.Blocks:
@@ -57,20 +70,12 @@ class Ai_Agent:
                 for x in range(0, max_x + 1):
                     if self.env.is_valid_move(state, block, (x, y)):
                         moves.append((block, (x, y)))
-        
-        if not moves:
-            return None
-        
-        # בחר מהלך עם ה-Q-value הגבוה ביותר או אקראי עם הסתברות epsilon
-        if random.random() < self.epsilon or len(moves) == 1:
-            # בחירה אקראית
-            best_move = random.choice(moves)
-        else:
-            # בחירה לפי Q-value
-            best_move = None
-            best_q_value = float('-inf')
-            
-            for move in moves:
+        return moves
+    
+
+    def get_after_states (self, moves, state):
+        after_states = []
+        for move in moves:
                 block, pos = move
                 grid_x, grid_y = pos
                 
@@ -85,26 +90,24 @@ class Ai_Agent:
                 
                 # קבל את ה-Q-value של ה-state הבא
                 state_tensor = new_state.TensorState(new_state.Board)
-                state_tensor = state_tensor.view(1, 1, 8, 8)
-                
-                with torch.no_grad():  # אל תחשב gradients בהערכה
-                    q_value = self.model(state_tensor).item()
-                
-                # בחר את המהלך עם ה-Q-value הגבוה ביותר
-                if q_value > best_q_value:
-                    best_q_value = q_value
-                    best_move = move
+                state_tensor = state_tensor.view(1, 8, 8)
+                after_states.append(state_tensor)
         
-        if best_move:
-            block, (grid_x, grid_y) = best_move
+        # Stack all tensors into a single tensor of shape [n, 1, 8, 8]
+        after_tensors = torch.stack(after_states, dim=0)
+        return after_tensors
+    
+    def move_to_action (self, best_move):
+        block, (grid_x, grid_y) = best_move
             
-            # המר קואורדינטות רשת לקואורדינטות פיקסלים
-            pixel_x = self.GRID_ORIGIN_X + grid_x * self.GRID_SIZE
-            pixel_y = self.GRID_ORIGIN_Y + grid_y * self.GRID_SIZE
-            
-            self.selected_block = block
-            
-            # החזר את הפעולה בפורמט שenv.move מצפה
-            return (block, (pixel_x, pixel_y))
+        # המר קואורדינטות רשת לקואורדינטות פיקסלים
+        pixel_x = self.GRID_ORIGIN_X + grid_x * self.GRID_SIZE
+        pixel_y = self.GRID_ORIGIN_Y + grid_y * self.GRID_SIZE
         
-        return None
+        self.selected_block = block
+        
+        # החזר את הפעולה בפורמט שenv.move מצפה
+        return (block, (pixel_x, pixel_y))
+    
+    def get_epsilon (self, epoch = 0):
+        return 0.1
