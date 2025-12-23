@@ -71,7 +71,6 @@ class Ai_Agent:
                     if self.env.is_valid_move(state, block, (x, y)):
                         moves.append((block, (x, y)))
         return moves
-    
 
     def get_after_states (self, moves, state):
         after_states = []
