@@ -29,6 +29,7 @@ class Game:
         env.reset()  # איפוס הסביבה
         state = env.state  # קבלת המצב ההתחלתי
         game_over = False  # משתנה שמנהל את מצב סיום המשחק
+        
 
         # לולאת המשחק הראשית
         while run:
