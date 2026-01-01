@@ -46,7 +46,20 @@ class Environment:
             "S": [[0, 1, 1], [1, 1, 0]],
             "S_vertical": [[1, 0], [1, 1], [0, 1]],
             "plus": [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
-            "dot": [[1]],
+            "dot1": [[1]],
+            "dot2": [[1]],
+            "dot3": [[1]],
+            "dot4": [[1]],
+            "dot6": [[1]],
+            "dot7": [[1]],
+            "dot8": [[1]],
+            "dot9": [[1]],
+            "dot10": [[1]],
+            "dot11": [[1]],
+            "dot12": [[1]],
+            "dot13": [[1]],
+            "dot14": [[1]],
+            "dot15": [[1]],
             "small_square": [[1, 1], [1, 1]],
             "corner": [[1, 1], [1, 0]],
             "corner_flipped": [[1, 1], [0, 1]],
@@ -105,6 +118,21 @@ class Environment:
 
         # בדיקה אם צריך ליצור בלוקים חדשים
         self.check_and_generate_blocks()
+    
+    def move_legal(self, state: State, action: tuple):
+        block, position = action
+
+        # המרת מיקום פיקסלים למיקום רשת
+        grid_x = int((position[0] - self.GRID_ORIGIN_X) / self.GRID_SIZE)
+        grid_y = int((position[1] - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
+        self.fix_block_to_board(state, block, (grid_x, grid_y))
+        self.check_and_explode_rows(state)
+        self.check_and_generate_blocks()
+        reward = self.reward()
+        return reward
+
+    def reward(self):
+        return 0
 
     def is_valid_move(self, state: State, block: Block, position: tuple) -> bool:
         """
