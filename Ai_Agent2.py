@@ -109,4 +109,4 @@ class Ai_Agent:
         return (block, (pixel_x, pixel_y))
     
     def get_epsilon (self, epoch = 0):
-        return 0.1
+        return 0.0

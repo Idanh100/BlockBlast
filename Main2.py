@@ -4,9 +4,7 @@ from State2 import State
 from Environment2 import Environment
 from HumanAgent2 import HumanAgent
 from Ai_Agent2 import Ai_Agent
-from Trainer import main as train_ai
 import os
-import threading
 
 class Game:
     def __init__(self):        
@@ -26,9 +24,7 @@ class Game:
         elif menu_action == "PLAY":  # אם המשתמש בחר לשחק
             player = HumanAgent()  # יצירת שחקן אנושי
         elif menu_action == "TRAIN":  # אם המשתמש בחר באפשרות Train AI
-            # הרצת האימון בחוט נפרד
-            threading.Thread(target=train_ai).start()
-            run = False  # סגירת הלולאה הראשית
+            player = Ai_Agent(None)  # יצירת שחקן Ai_Agent
 
         # אתחול הסביבה והמצב
         env.reset()  # איפוס הסביבה
@@ -39,45 +35,51 @@ class Game:
         # לולאת המשחק הראשית
         while run:
             if game_over:  # אם המשחק נגמר
-                # מצב PLAY, הצגת מסך Game Over
-                # הדפסת הניקוד של המשתמש
-                # print(f"Game Over! Your Score: {state.score}")
+                if current_mode == "TRAIN":  # אם במצב Train AI, ריסטארט אוטומטי
+                    env.reset()  # איפוס הסביבה
+                    state = env.state  # קבלת המצב ההתחלתי
+                    game_over = False  # איפוס מצב סיום המשחק
+                else:  # מצב PLAY, הצגת מסך Game Over
+                    # הדפסת הניקוד של המשתמש
+                    # print(f"Game Over! Your Score: {state.score}")
 
-                # הצגת מסך Game Over
-                restart_button, main_menu_button = graphics.draw_game_over(state)
-                for event in pygame.event.get():  # טיפול באירועים
-                    if event.type == pygame.QUIT:  # אם המשתמש סגר את החלון
-                        run = False
-                    elif event.type == pygame.MOUSEBUTTONDOWN:  # אם המשתמש לחץ על העכבר
-                        mouse_x, mouse_y = event.pos  # קבלת מיקום הלחיצה
-                        if restart_button.collidepoint(mouse_x, mouse_y):  # התחלת משחק חדש
-                            env.reset()  # איפוס הסביבה
-                            state = env.state  # קבלת המצב ההתחלתי
-                            game_over = False  # איפוס מצב סיום המשחק
-                        elif main_menu_button.collidepoint(mouse_x, mouse_y):  # חזרה לתפריט הראשי
-                            menu_action = self.main_menu(graphics)  # הצגת התפריט הראשי
-                            current_mode = menu_action  # עדכון המצב הנוכחי
-                            if menu_action == "QUIT":  # אם המשתמש בחר לצאת
-                                run = False
-                            elif menu_action == "PLAY":  # אם המשתמש בחר לשחק
-                                player = HumanAgent()  # יצירת שחקן אנושי
+                    # הצגת מסך Game Over
+                    restart_button, main_menu_button = graphics.draw_game_over(state)
+                    for event in pygame.event.get():  # טיפול באירועים
+                        if event.type == pygame.QUIT:  # אם המשתמש סגר את החלון
+                            run = False
+                        elif event.type == pygame.MOUSEBUTTONDOWN:  # אם המשתמש לחץ על העכבר
+                            mouse_x, mouse_y = event.pos  # קבלת מיקום הלחיצה
+                            if restart_button.collidepoint(mouse_x, mouse_y):  # התחלת משחק חדש
                                 env.reset()  # איפוס הסביבה
                                 state = env.state  # קבלת המצב ההתחלתי
                                 game_over = False  # איפוס מצב סיום המשחק
-                            elif menu_action == "TRAIN":  # אם המשתמש בחר באפשרות Train AI
-                                # הרצת האימון בחוט נפרד
-                                threading.Thread(target=train_ai).start()
-                                run = False  # סגירת הלולאה הראשית
-
-                                    
+                            elif main_menu_button.collidepoint(mouse_x, mouse_y):  # חזרה לתפריט הראשי
+                                menu_action = self.main_menu(graphics)  # הצגת התפריט הראשי
+                                current_mode = menu_action  # עדכון המצב הנוכחי
+                                if menu_action == "QUIT":  # אם המשתמש בחר לצאת
+                                    run = False
+                                elif menu_action == "PLAY":  # אם המשתמש בחר לשחק
+                                    player = HumanAgent()  # יצירת שחקן אנושי
+                                    env.reset()  # איפוס הסביבה
+                                    state = env.state  # קבלת המצב ההתחלתי
+                                    game_over = False  # איפוס מצב סיום המשחק
+                                elif menu_action == "AI Play":  # אם המשתמש בחר באפשרות Train AI
+                                    player = Ai_Agent()  # יצירת שחקן Ai_Agent
+                                    env.reset()  # איפוס הסביבה
+                                    state = env.state  # קבלת המצב ההתחלתי
+                                    game_over = False  # איפוס מצב סיום המשחק
             else:  # אם המשחק ממשיך
                 graphics.draw_game(state, player.selected_block)  # ציור מצב המשחק הנוכחי
                 pygame.display.flip()  # עדכון המסך
                 action = player.get_action(state)  # קבלת פעולה מהשחקן
+             ## the action will be the best move from ai agent
                 if action == "QUIT":  # אם השחקן בחר לצאת
                     run = False
                 elif action:  # אם השחקן ביצע פעולה
                     env.move(state, action)  # ביצוע הפעולה בסביבה
+                    #inside move convert to pixels be sure that human works the same
+                    # move to pixel in environment
                     if env.is_game_over(state):  # בדיקה אם המשחק נגמר
                         game_over = True  # עדכון מצב סיום המשחק
                 else:  # אם אין פעולה חוקית (למשל, אין מהלכים זמינים)
