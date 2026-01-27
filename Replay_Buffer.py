@@ -12,11 +12,12 @@ class ReplayBuffer:
         else:
             self.buffer = deque(maxlen=capacity)
 
-    def push (self, state , action, reward, next_state, done):
+    def push (self, state , action, after_state, reward, next_state, done):
         '''
-        All values are tensors
+        state, action, next_state = are not tensors
+        after_state, reward, done are tensors
         '''
-        self.buffer.append((state, action, reward, next_state, done))
+        self.buffer.append((state, action, after_state, reward, next_state, done))
     
     def sample (self, batch_size):
         if (batch_size > self.__len__()):
