@@ -109,6 +109,7 @@ class Environment:
         # בדיקת חוקיות המהלך
         if self.is_valid_move(state, block, (grid_x, grid_y)):
             self.fix_block_to_board(state, block, (grid_x, grid_y))
+            self.print_block_squares(block.shape)
 
             # בדיקה אם יש שורות שצריך לפוצץ
             self.check_and_explode_rows(state)
@@ -132,7 +133,16 @@ class Environment:
         return reward
 
     def reward(self):
-        return 0
+        # 10 נקודות על כל פיצוץ שורה
+        # כמות הנקודות ככמות המשבצות שהוא מילא מכל       
+        pass
+
+    def count_squares_of_block(self, shape):
+        return sum(sum(row) for row in shape)
+
+    def print_block_squares(self, shape):
+        count = self.count_squares_of_block(shape)
+        print(f"Block has {count} squares")
 
     def is_valid_move(self, state: State, block: Block, position: tuple) -> bool:
         """
