@@ -48,8 +48,8 @@ class Game:
             while True:
                 for event in pygame.event.get():  # טיפול באירועים
                     if event.type == pygame.QUIT:  # אם המשתמש סגר את החלון
-                        run = False
-                        break
+                        pygame.quit()
+                        return
                 
                 # אם המשחק ממשיך
                 graphics.draw_game(env.state, player.selected_block)  # ציור מצב המשחק הנוכחי

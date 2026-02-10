@@ -78,6 +78,9 @@ class Game:
                     run = False
                 elif action:  # אם השחקן ביצע פעולה
                     env.move(state, action)  # ביצוע הפעולה בסביבה
+                    reward = env.Get_Reward_Args(action=action, state=env.state)
+                    print("Reward:", reward)
+
                     #inside move convert to pixels be sure that human works the same
                     # move to pixel in environment
                     if env.is_game_over(state):  # בדיקה אם המשחק נגמר

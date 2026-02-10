@@ -110,9 +110,9 @@ class Environment:
         grid_y = int((position[1] - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
 
         # בדיקת חוקיות המהלך
+        filled_count = 0  # Initialize to 0 for invalid moves
         if self.is_valid_move(state, block, (grid_x, grid_y)):
             # count occupied cells in the rows/cols covered by the shape BEFORE placement
-            self.Get_Reward(state, block, grid_x, grid_y)  # calculate reward before fixing block
             filled_count = self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))
             self.fix_block_to_board(state, block, (grid_x, grid_y))
             self.print_block_squares(block.shape)
@@ -151,10 +151,7 @@ class Environment:
         grid_x = int((position[0] - self.GRID_ORIGIN_X) / self.GRID_SIZE)
         grid_y = int((position[1] - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
 
-        if self.is_valid_move(state, block, (grid_x, grid_y)):
-            reward = self.Get_Reward(state, block, grid_x, grid_y)
-        else:
-            reward = 0
+        reward = self.Get_Reward(state, block, grid_x, grid_y)
         return reward
 
     def Get_Reward(self, state, block, grid_x, grid_y):
@@ -193,24 +190,9 @@ class Environment:
         return row_counts, col_counts
 
     def sum_ones_in_affected_rows_cols(self, state: State, block: Block, position: tuple) -> int:
-        """
-        Sum the number of cells equal to 1 inside the bounding rows and columns
-        where `block` is placed at `position`.
-
-        Args:
-            state (State): current game state with `Board` as a numpy array.
-            block (Block): block object (or any with `shape` attribute).
-            position (tuple): (grid_x, grid_y) top-left position on the board.
-
-        Returns:
-            int: total count of cells equal to 1 within the rectangle spanned by
-                 the placed shape (rows x columns).
-        """
         # Use count_ones_per_row_col to get per-row and per-column counts,
         # then sum those counts for rows and columns that the shape spans.
         shape_arr = np.array(getattr(block, 'shape', []))
-        if shape_arr.size == 0:
-            return 0
 
         h, w = shape_arr.shape
         grid_x, grid_y = position
@@ -231,7 +213,7 @@ class Environment:
         total_rows = sum(row_counts[r] for r in range(min_y, max_y) if 0 <= r < len(row_counts))
         total_cols = sum(col_counts[c] for c in range(min_x, max_x) if 0 <= c < len(col_counts))
 
-        total = int(total_rows + total_cols)
+        total = int(total_rows + total_cols) - self.count_squares_of_block(block.shape) * 2  # subtract the block's own cells
         return total
 
     def is_valid_move(self, state: State, block: Block, position: tuple) -> bool:
