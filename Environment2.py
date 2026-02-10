@@ -126,6 +126,113 @@ class Environment:
 
         # בדיקה אם צריך ליצור בלוקים חדשים
         self.check_and_generate_blocks()
+        # (no per-turn print here)
+        return filled_count
+    
+    def move_legal(self, state: State, action: tuple):
+        block, position = action
+
+        # המרת מיקום פיקסלים למיקום רשת
+        grid_x = int((position[0] - self.GRID_ORIGIN_X) / self.GRID_SIZE)
+        grid_y = int((position[1] - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
+        # count before placing so the block's own cells are not included
+        filled_count = self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))
+        self.fix_block_to_board(state, block, (grid_x, grid_y))
+        self.check_and_explode_rows(state)
+        self.check_and_generate_blocks()
+        reward = self.reward()
+        # (no per-turn print here)
+        return reward
+
+    def Get_Reward_Args(self, state: State, action: tuple):
+        block, position = action
+
+        # המרת מיקום פיקסלים למיקום רשת
+        grid_x = int((position[0] - self.GRID_ORIGIN_X) / self.GRID_SIZE)
+        grid_y = int((position[1] - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
+
+        if self.is_valid_move(state, block, (grid_x, grid_y)):
+            reward = self.Get_Reward(state, block, grid_x, grid_y)
+        else:
+            reward = 0
+        return reward
+
+    def Get_Reward(self, state, block, grid_x, grid_y):
+        reward = self.count_squares_of_block(block.shape)  # נקודות לפי כמות המשבצות שהונחו
+        reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))  # נקודות לפי כמות המשבצות שהיו לפני ההנחה
+        reward += self.check_and_explode_rows(state) * 10  # נקודות לפי כמות הפיצוצים שקרו לאחר ההנחה
+        return reward
+
+    def count_squares_of_block(self, shape):
+        return sum(sum(row) for row in shape)
+
+    def print_block_squares(self, shape):
+        count = self.count_squares_of_block(shape)
+        print(f"Block has {count} squares")
+
+    def count_ones_per_row_col(self, state: State):
+        """
+        Count how many occupied cells (non-zero) exist in each row and each
+        column of the board, print the counts for every row and column, and
+        return the counts.
+
+        Args:
+            state (State): The game state containing `Board` as a numpy array.
+
+        Returns:
+            tuple: (row_counts, col_counts) where each is a list of integers.
+        """
+        board = state.Board
+        # Ensure board is a numpy array
+        board_arr = np.array(board)
+
+        # Count occupied cells (non-zero) per row and per column
+        row_counts = np.sum(board_arr != 0, axis=1).tolist()
+        col_counts = np.sum(board_arr != 0, axis=0).tolist()
+
+        return row_counts, col_counts
+
+    def sum_ones_in_affected_rows_cols(self, state: State, block: Block, position: tuple) -> int:
+        """
+        Sum the number of cells equal to 1 inside the bounding rows and columns
+        where `block` is placed at `position`.
+
+        Args:
+            state (State): current game state with `Board` as a numpy array.
+            block (Block): block object (or any with `shape` attribute).
+            position (tuple): (grid_x, grid_y) top-left position on the board.
+
+        Returns:
+            int: total count of cells equal to 1 within the rectangle spanned by
+                 the placed shape (rows x columns).
+        """
+        # Use count_ones_per_row_col to get per-row and per-column counts,
+        # then sum those counts for rows and columns that the shape spans.
+        shape_arr = np.array(getattr(block, 'shape', []))
+        if shape_arr.size == 0:
+            return 0
+
+        h, w = shape_arr.shape
+        grid_x, grid_y = position
+
+        # compute the row/column indices covered by the shape (clamped to board)
+        board = np.array(state.Board)
+        min_y = max(0, grid_y)
+        min_x = max(0, grid_x)
+        max_y = min(board.shape[0], grid_y + h)
+        max_x = min(board.shape[1], grid_x + w)
+
+        if min_y >= max_y or min_x >= max_x:
+            return 0
+
+        row_counts, col_counts = self.count_ones_per_row_col(state)
+
+        # sum counts for affected rows and columns
+        total_rows = sum(row_counts[r] for r in range(min_y, max_y) if 0 <= r < len(row_counts))
+        total_cols = sum(col_counts[c] for c in range(min_x, max_x) if 0 <= c < len(col_counts))
+
+        total = int(total_rows + total_cols)
+        return total
 
     def is_valid_move(self, state: State, block: Block, position: tuple) -> bool:
         """
