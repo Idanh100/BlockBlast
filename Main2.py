@@ -24,7 +24,7 @@ class Game:
         elif menu_action == "PLAY":  # אם המשתמש בחר לשחק
             player = HumanAgent()  # יצירת שחקן אנושי
         elif menu_action == "TRAIN":  # אם המשתמש בחר באפשרות Train AI
-            player = Ai_Agent()  # יצירת שחקן Ai_Agent
+            player = Ai_Agent(None)  # יצירת שחקן Ai_Agent
 
         # אתחול הסביבה והמצב
         env.reset()  # איפוס הסביבה
@@ -64,19 +64,22 @@ class Game:
                                     env.reset()  # איפוס הסביבה
                                     state = env.state  # קבלת המצב ההתחלתי
                                     game_over = False  # איפוס מצב סיום המשחק
-                                elif menu_action == "TRAIN":  # אם המשתמש בחר באפשרות Train AI
+                                elif menu_action == "AI Play":  # אם המשתמש בחר באפשרות Train AI
                                     player = Ai_Agent()  # יצירת שחקן Ai_Agent
                                     env.reset()  # איפוס הסביבה
                                     state = env.state  # קבלת המצב ההתחלתי
                                     game_over = False  # איפוס מצב סיום המשחק
-            else:  # אם המשחק ממשיך
+            else:  # אם המשחק ממשיך 
                 graphics.draw_game(state, player.selected_block)  # ציור מצב המשחק הנוכחי
                 pygame.display.flip()  # עדכון המסך
                 action = player.get_action(state)  # קבלת פעולה מהשחקן
+             ## the action will be the best move from ai agent
                 if action == "QUIT":  # אם השחקן בחר לצאת
                     run = False
                 elif action:  # אם השחקן ביצע פעולה
                     env.move(state, action)  # ביצוע הפעולה בסביבה
+                    #inside move convert to pixels be sure that human works the same
+                    # move to pixel in environment
                     if env.is_game_over(state):  # בדיקה אם המשחק נגמר
                         game_over = True  # עדכון מצב סיום המשחק
                 else:  # אם אין פעולה חוקית (למשל, אין מהלכים זמינים)

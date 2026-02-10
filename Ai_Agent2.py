@@ -14,7 +14,7 @@ class Ai_Agent:
         Args:
             model: DQN model instance for choosing actions. If None, creates a new one.
         """
-        pygame.init()
+        # pygame.init()
         info = pygame.display.get_desktop_sizes()[0]
         self.width, self.height = info
 
@@ -27,29 +27,37 @@ class Ai_Agent:
         self.selected_block = None  # התאמה לממשק של Main2.py
         self.env = Environment(State())
         
+    def get_action (self, state, epoch=0):
+        action, _ = self.get_action_train(state, epoch)
+        return action
 
-    def get_action(self, state):
+    def get_action_train(self, state, epoch=0):
         """Get the best action using the DQN model.
         
         Returns:
             tuple: (block, position_in_pixels) if action found, None otherwise
         """
         moves = self.get_all_moves(state)
+        after_state_tensors = self.get_after_states(moves, state)
                 
         # בחר מהלך עם ה-Q-value הגבוה ביותר או אקראי עם הסתברות epsilon
-        if random.random() < self.get_epsilon() or len(moves) == 1:
+        if random.random() < self.get_epsilon(epoch):
             # בחירה אקראית
-            best_move = random.choice(moves)
-            return self.move_to_action(best_move)
+            best_idx = random.randint(0, len(moves) - 1)
+            best_move = moves[best_idx]
+            return self.move_to_action(best_move),  after_state_tensors[best_idx] 
 
-        after_state_tensors = self.get_after_states(moves, state)
+        
 
         with torch.no_grad():  # אל תחשב gradients בהערכה
             q_values = self.model(after_state_tensors)
 
         best_idx = torch.argmax(q_values)
         best_move = moves[best_idx]
-        return self.move_to_action(best_move)
+        best_after_state_tensor = after_state_tensors[best_idx] 
+        action = self.move_to_action(best_move)
+        test = action, best_after_state_tensor
+        return action, best_after_state_tensor
       
         
     
@@ -108,5 +116,8 @@ class Ai_Agent:
         # החזר את הפעולה בפורמט שenv.move מצפה
         return (block, (pixel_x, pixel_y))
     
-    def get_epsilon (self, epoch = 0):
-        return 0.1
+    def get_epsilon (self, epoch = 0, start=1, end=0.01, decay = 500):
+        if epoch > decay:
+            return end
+        return start - (end - start) * (epoch / decay)
+        

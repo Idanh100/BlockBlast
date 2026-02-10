@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import copy
 
 class State:
     def __init__(self):
@@ -11,6 +12,10 @@ class State:
         self.in_combo = False  # האם אנחנו ב-Combo
 
     def TensorState(self, Board): #בונה state בtensor 
-        tensor_state = torch.tensor(Board.flatten(), dtype=torch.float32)        
+        tensor_state = torch.tensor(Board, dtype=torch.float32)        
         return tensor_state
+    
+    def copy(self):
+        return copy.deepcopy(self)
+        
 
