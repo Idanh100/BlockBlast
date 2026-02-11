@@ -23,6 +23,7 @@ class Environment:
         # track explosions and last pre-placement sum for reward calculation
         self.num_explosions = 0
         self.last_preplacement_sum = 0
+        self.last_move_valid = False  # לעקוב אם המהלך האחרון היה חוקי
 
     def all_shapes(self):
         """Generate all possible block shapes for the game."""
@@ -120,9 +121,12 @@ class Environment:
             # בדיקה אם יש שורות שצריך לפוצץ
             num_expl = self.check_and_explode_rows(state)
             self.num_explosions = num_expl
+            self.last_move_valid = True  # המהלך היה חוקי
         else:
             # החזרת הבלוק למיקומו ההתחלתי הקבוע
             block.rect = block.initial_position.copy()
+            self.last_move_valid = False  # המהלך לא היה חוקי
+            self.num_explosions = 0  # אין פיצוצים במהלך לא חוקי
 
         # בדיקה אם צריך ליצור בלוקים חדשים
         self.check_and_generate_blocks()
@@ -145,6 +149,10 @@ class Environment:
         return reward
 
     def Get_Reward_Args(self, state: State, action: tuple):
+        # אם המהלך האחרון לא היה חוקי, אין reward
+        if not self.last_move_valid:
+            return 0
+        
         block, position = action
 
         # המרת מיקום פיקסלים למיקום רשת
@@ -157,7 +165,11 @@ class Environment:
     def Get_Reward(self, state, block, grid_x, grid_y):
         reward = self.count_squares_of_block(block.shape)  # נקודות לפי כמות המשבצות שהונחו
         reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))  # נקודות לפי כמות המשבצות שהיו לפני ההנחה
-        reward += self.check_and_explode_rows(state) * 10  # נקודות לפי כמות הפיצוצים שקרו לאחר ההנחה
+        reward += self.num_explosions * 10  # נקודות לפי כמות הפיצוצים שקרו לאחר ההנחה
+        if reward > 0:
+            print("Reward:", reward)
+        else:
+            print("Invalid move - No Reward")
         return reward
 
     def count_squares_of_block(self, shape):
