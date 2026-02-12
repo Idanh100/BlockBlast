@@ -30,3 +30,24 @@ class DQN(nn.Module):
         All_After_States = F.relu(self.fc2(All_After_States))
         All_After_States = self.fc3(All_After_States)
         return All_After_States
+    
+    def loss(self, Q_values, rewards, Q_hat_values, dones, gamma=0.99):
+        """DQN Loss function
+        
+        Args:
+            Q_values: Q(s,a) from current network - shape [batch, 1]
+            rewards: immediate rewards - shape [batch, 1]
+            Q_hat_values: max Q(s', a') from target network - shape [batch, 1]
+            dones: terminal state mask - shape [batch, 1]
+            gamma: discount factor
+        
+        Returns:
+            mse_loss: mean squared error between Q and target
+        """
+        # Target Q-value: r + γ * max Q_hat(s', a') * (1 - done)
+        # Multiply by (1-done) to zero out Q_hat when episode is done
+        target_q_values = rewards + gamma * Q_hat_values * (1 - dones)
+        
+        # DQN loss
+        mse_loss = F.mse_loss(Q_values, target_q_values)
+        return mse_loss

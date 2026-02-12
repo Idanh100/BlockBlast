@@ -27,6 +27,19 @@ class Ai_Agent:
         self.selected_block = None  # התאמה לממשק של Main2.py
         self.env = Environment(State())
         
+    def Q (self, states, actions):
+        """Get Q-values for given states and actions"""
+        Q_values = self.model(states)  # shape: [batch, 1]
+        return Q_values
+
+    def get_Actions_Values(self, next_states):
+        """Get the best actions and their Q-values for next states"""
+        with torch.no_grad():
+            q_values = self.model(next_states)  # shape: [batch, 1]
+        best_actions = torch.argmax(q_values, dim=1, keepdim=True)  # shape: [batch, 1]
+        return best_actions, q_values
+
+
     def get_action (self, state, events=None, epoch=0):
         action, _ = self.get_action_train(state, epoch)
         return action

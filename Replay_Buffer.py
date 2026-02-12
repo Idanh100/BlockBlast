@@ -12,21 +12,23 @@ class ReplayBuffer:
         else:
             self.buffer = deque(maxlen=capacity)
 
-    def push (self, state , action, after_state, reward, next_state, done):
+    def push (self, state, action, reward, next_state, done):
         '''
-        state, action, next_state = are not tensors
-        after_state, reward, done are tensors
+        state, action, next_state = tensors
+        reward, done = tensors
         '''
-        self.buffer.append((state, action, after_state, reward, next_state, done))
+        self.buffer.append((state, action, reward, next_state, done))
     
     def sample (self, batch_size):
         if (batch_size > self.__len__()):
             batch_size = self.__len__()
-        state_tensors, action_tensor, reward_tensors, next_state_tensors, dones_tensor = zip(*random.sample(self.buffer, batch_size))
-        states = torch.vstack(state_tensors)
-        actions= torch.vstack(action_tensor)
+        state_tensors, action_tensors, reward_tensors, next_state_tensors, dones_tensor = zip(*random.sample(self.buffer, batch_size))
+        states = torch.cat(state_tensors, dim=0)  # states are [1, 8, 8] each, cat along dim 0 -> [batch, 8, 8]
+        states = states.unsqueeze(1)  # add channel dimension -> [batch, 1, 8, 8]
+        actions = torch.vstack(action_tensors)
         rewards = torch.vstack(reward_tensors)
-        next_states = torch.vstack(next_state_tensors)
+        next_states = torch.cat(next_state_tensors, dim=0)
+        next_states = next_states.unsqueeze(1)  # add channel dimension -> [batch, 1, 8, 8]
         dones = torch.vstack(dones_tensor)
         return states, actions, rewards, next_states, dones
 
