@@ -27,7 +27,7 @@ class Ai_Agent:
         self.selected_block = None  # התאמה לממשק של Main2.py
         self.env = Environment(State())
         
-    def get_action (self, state, epoch=0):
+    def get_action (self, state, events=None, epoch=0):
         action, _ = self.get_action_train(state, epoch)
         return action
 

@@ -84,6 +84,9 @@ class Environment:
         self.state = State()  # יצירת אובייקט חדש של State
         self.set_random_block()  # יצירת בלוקים חדשים
 
+    def shutdown(self):
+        pygame.quit()
+
     def set_random_block(self, state: State = None):
         if state is None:
             state = self.state
@@ -166,10 +169,6 @@ class Environment:
         reward = self.count_squares_of_block(block.shape)  # נקודות לפי כמות המשבצות שהונחו
         reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))  # נקודות לפי כמות המשבצות שהיו לפני ההנחה
         reward += self.num_explosions * 10  # נקודות לפי כמות הפיצוצים שקרו לאחר ההנחה
-        if reward > 0:
-            print("Reward:", reward)
-        else:
-            print("Invalid move - No Reward")
         return reward
 
     def count_squares_of_block(self, shape):
@@ -177,7 +176,6 @@ class Environment:
 
     def print_block_squares(self, shape):
         count = self.count_squares_of_block(shape)
-        print(f"Block has {count} squares")
 
     def count_ones_per_row_col(self, state: State):
         """
@@ -347,6 +345,7 @@ class Environment:
                 for x in range(len(board[0])):
                     if self.is_valid_move(state, block, (x, y)):
                         return False  # יש מקום להניח לפחות בלוק אחד
+        print("Game Over! Score:", state.score)
         return True  # אין מקום להניח אף בלוק
 
     def GetAllPossibleMoves(self, state: State):

@@ -15,9 +15,12 @@ class HumanAgent:
         self.offset_x = 0  # מרחק אופקי בין העכבר לבלוק
         self.offset_y = 0  # מרחק אנכי בין העכבר לבלוק
 
-    def get_action(self, state):
-        """Handle mouse events to allow dragging blocks and return selected block and drop position."""
-        for event in pygame.event.get():
+    def get_action(self, state, events=None):
+        
+        if events is None:
+            events = pygame.event.get()
+        
+        for event in events:
             if event.type == pygame.QUIT:
                 return "QUIT"
 

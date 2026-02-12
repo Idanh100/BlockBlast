@@ -9,6 +9,13 @@ import os
 class Game:
     def __init__(self):        
         pass  # אתחול המחלקה Game (כרגע אין פעולות באתחול)
+    
+    def check_close_button(self, close_button_rect, events):
+        """Check if close button was clicked in the given events."""
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and close_button_rect.collidepoint(event.pos):
+                return True
+        return False
 
     def play(self):
         # אתחול רכיבי המשחק
@@ -34,6 +41,19 @@ class Game:
 
         # לולאת המשחק הראשית
         while run:
+            # קרא את כל האירועים בתור הראשון
+            events = pygame.event.get()
+            
+            # בדוק pygame.QUIT בתחילת כל איטרציה
+            for event in events:
+                if event.type == pygame.QUIT:
+                    env.shutdown()
+                    run = False
+                    break
+            
+            if not run:
+                break
+            
             if game_over:  # אם המשחק נגמר
                 if current_mode == "TRAIN":  # אם במצב Train AI, ריסטארט אוטומטי
                     env.reset()  # איפוס הסביבה
@@ -45,7 +65,7 @@ class Game:
 
                     # הצגת מסך Game Over
                     restart_button, main_menu_button = graphics.draw_game_over(state)
-                    for event in pygame.event.get():  # טיפול באירועים
+                    for event in events:  # טיפול באירועים שקרא כבר
                         if event.type == pygame.QUIT:  # אם המשתמש סגר את החלון
                             run = False
                         elif event.type == pygame.MOUSEBUTTONDOWN:  # אם המשתמש לחץ על העכבר
@@ -70,9 +90,17 @@ class Game:
                                     state = env.state  # קבלת המצב ההתחלתי
                                     game_over = False  # איפוס מצב סיום המשחק
             else:  # אם המשחק ממשיך 
-                graphics.draw_game(state, player.selected_block)  # ציור מצב המשחק הנוכחי
+                close_button_rect = graphics.draw_game(state, player.selected_block)  # ציור מצב המשחק הנוכחי וקבלת rect הכפתור
                 pygame.display.flip()  # עדכון המסך
-                action = player.get_action(state)  # קבלת פעולה מהשחקן
+                
+                # בדוק אם לחצו על כפתור ה-Close
+                if self.check_close_button(close_button_rect, events):
+                    env.shutdown()
+                    run = False
+                    break
+                
+                # שלח את האירועים ל-agent
+                action = player.get_action(state, events)  # קבלת פעולה מהשחקן עם האירועים
              ## the action will be the best move from ai agent
                 if action == "QUIT":  # אם השחקן בחר לצאת
                     run = False
@@ -87,9 +115,6 @@ class Game:
                 else:  # אם אין פעולה חוקית (למשל, אין מהלכים זמינים)
                     if env.is_game_over(state):  # בדיקה אם המשחק נגמר
                         game_over = True  # עדכון מצב סיום המשחק
-                for event in pygame.event.get():  # טיפול באירועים
-                    if event.type == pygame.QUIT:  # אם המשתמש סגר את החלון
-                        run = False
 
     def main_menu(self, graphics):
         """

@@ -40,6 +40,7 @@ class Graphics:
         """
         Draw the entire game state, including the board, blocks, and score.
         If a block is being dragged, highlight the potential placement.
+        Returns the close button rect for click detection.
         """
         self.screen.fill(self.DARK_BLUE)
         self._draw_grid(state, dragging_block)
@@ -55,6 +56,11 @@ class Graphics:
 
         # ציור אנימציית Combo אם יש
         self._draw_combo_animation(state)
+        
+        # ציור כפתור X להסגרה וקבלת ה-rect שלו
+        close_button_rect = self._draw_close_button()
+        
+        return close_button_rect
 
     def _draw_grid(self, state, dragging_block=None):
         """
@@ -501,3 +507,61 @@ class Graphics:
                             block_size - self.GRID_MARGIN
                         )
                         pygame.draw.rect(self.screen, color, rect, border_radius=5)
+    
+    def _draw_close_button(self):
+        """
+        Draw a close button (X in a rounded square) in the top-left corner.
+        Returns the rect for click detection.
+        """
+        button_size = 50
+        button_x = 20
+        button_y = 20
+        
+        # קבלת מיקום העכבר
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        
+        # יצירת rect לכפתור
+        button_rect = pygame.Rect(button_x, button_y, button_size, button_size)
+        
+        # בדיקה אם העכבר מעל הכפתור
+        is_hovering = button_rect.collidepoint(mouse_x, mouse_y)
+        
+        # צבע הרקע - אדום בהיר כשמעל, אדום כהה כשלא
+        button_color = (255, 80, 80) if is_hovering else (220, 50, 50)
+        
+        # ציור הכפתור עם קצוות מעוגלים
+        pygame.draw.rect(self.screen, button_color, button_rect, border_radius=8)
+        
+        # ציור קו לבן לגבול
+        pygame.draw.rect(self.screen, self.WHITE, button_rect, width=2, border_radius=8)
+        
+        # ציור ה-X (שתי קווים מצולבים) בעיצוב יותר חלק
+        line_length = 18
+        center_x = button_x + button_size // 2
+        center_y = button_y + button_size // 2
+        
+        pygame.draw.line(
+            self.screen,
+            self.WHITE,
+            (center_x - line_length, center_y - line_length),
+            (center_x + line_length, center_y + line_length),
+            width=3
+        )
+        pygame.draw.line(
+            self.screen,
+            self.WHITE,
+            (center_x + line_length, center_y - line_length),
+            (center_x - line_length, center_y + line_length),
+            width=3
+        )
+        
+        return button_rect
+    
+    def get_close_button_rect(self):
+        """
+        Return the rectangle of the close button for click detection.
+        """
+        button_size = 50
+        button_x = 20
+        button_y = 20
+        return pygame.Rect(button_x, button_y, button_size, button_size)
