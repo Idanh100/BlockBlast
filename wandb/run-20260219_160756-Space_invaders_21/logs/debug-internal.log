@@ -1,0 +1,6 @@
+{"time":"2026-02-19T16:07:58.615336+02:00","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-02-19T16:07:59.1180469+02:00","level":"INFO","msg":"stream: created new stream","id":"Space_invaders_21"}
+{"time":"2026-02-19T16:07:59.1180469+02:00","level":"INFO","msg":"handler: started","stream_id":"Space_invaders_21"}
+{"time":"2026-02-19T16:07:59.1239772+02:00","level":"INFO","msg":"stream: started","id":"Space_invaders_21"}
+{"time":"2026-02-19T16:07:59.1245098+02:00","level":"INFO","msg":"writer: started","stream_id":"Space_invaders_21"}
+{"time":"2026-02-19T16:07:59.1245098+02:00","level":"INFO","msg":"sender: started","stream_id":"Space_invaders_21"}

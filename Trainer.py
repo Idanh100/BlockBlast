@@ -50,12 +50,12 @@ class Game:
         
         wandb_run = wandb.init(
             # set the wandb project where this run will be logged
-            project="Space_Invaders",
+            project="Block_Blast",
             resume=False, 
-            id='Space_invaders_21',
+            id='Block_Blast_1',
             # track hyperparameters and run metadata
             config={
-                "name": "Space_invaders_21",
+                "name": "Block_Blast_1",
                 "checkpoint_path": Checkpoint_Path,
                 "buffer_path": Buffer_Path,
                 "learning_rate": learning_rate,

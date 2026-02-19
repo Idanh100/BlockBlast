@@ -1,0 +1,28 @@
+{
+  "os":  "Windows-10-10.0.22621-SP0",
+  "python":  "CPython 3.11.3",
+  "startedAt":  "2026-02-19T14:07:56.172568Z",
+  "program":  "c:\\Users\\Talmid\\Test\\BlockBlast\\Trainer.py",
+  "codePath":  "Trainer.py",
+  "codePathLocal":  "Trainer.py",
+  "git":  {
+    "remote":  "https://github.com/Idanh100/BlockBlast.git",
+    "commit":  "e0bacfec337b83bcc70496f127487d68aeb114e0"
+  },
+  "email":  "Idanhalfon2007@gmail.com",
+  "root":  "C:\\Users\\Talmid\\Test\\BlockBlast",
+  "host":  "User",
+  "executable":  "C:\\Users\\Talmid\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "cpu_count":  4,
+  "cpu_count_logical":  4,
+  "disk":  {
+    "/":  {
+      "total":  "239074275328",
+      "used":  "203163734016"
+    }
+  },
+  "memory":  {
+    "total":  "8468713472"
+  },
+  "writerId":  "dhty0mx2l8mhuxxy860hqa560mfibin7"
+}
