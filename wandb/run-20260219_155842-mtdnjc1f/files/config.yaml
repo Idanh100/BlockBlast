@@ -1,0 +1,39 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            85c82pkb0hnovi92xc85ewporfc6rjaj:
+                codePath: WandbTest.py
+                codePathLocal: WandbTest.py
+                email: Idanhalfon2007@gmail.com
+                executable: C:\Users\Talmid\AppData\Local\Programs\Python\Python311\python.exe
+                git:
+                    commit: e0bacfec337b83bcc70496f127487d68aeb114e0
+                    remote: https://github.com/Idanh100/BlockBlast.git
+                host: User
+                os: Windows-10-10.0.22621-SP0
+                program: c:\Users\Talmid\Test\BlockBlast\WandbTest.py
+                python: CPython 3.11.3
+                root: C:\Users\Talmid\Test\BlockBlast
+                startedAt: "2026-02-19T13:58:42.944749Z"
+                writerId: 85c82pkb0hnovi92xc85ewporfc6rjaj
+        m: []
+        python_version: 3.11.3
+        t:
+            "3":
+                - 2
+                - 16
+            "4": 3.11.3
+            "5": 0.23.1
+            "8":
+                - 3
+            "12": 0.23.1
+            "13": windows-amd64
+architecture:
+    value: CNN
+dataset:
+    value: CIFAR-100
+epochs:
+    value: 10
+learning_rate:
+    value: 0.02

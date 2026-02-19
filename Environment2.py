@@ -9,8 +9,12 @@ from Graphics2 import Graphics
 import torch
 
 class Environment:
+    REWARD_EXPLODE = 10
+    
     def __init__(self, state):
+
         self.state = state
+
         
         pygame.init()
         info = pygame.display.get_desktop_sizes()[0]  # אם יש כמה מסכים – לוקח את הראשון

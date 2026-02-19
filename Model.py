@@ -51,3 +51,12 @@ class DQN(nn.Module):
         # DQN loss
         mse_loss = F.mse_loss(Q_values, target_q_values)
         return mse_loss
+    
+    def loadModel (self, file):
+        self.model = torch.load(file)
+    
+    def save_param (self, path):
+        self.DQN.save_params(path)
+
+    def load_params (self, path):
+        self.DQN.load_params(path)

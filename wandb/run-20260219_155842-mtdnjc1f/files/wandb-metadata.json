@@ -1,0 +1,17 @@
+{
+  "os":  "Windows-10-10.0.22621-SP0",
+  "python":  "CPython 3.11.3",
+  "startedAt":  "2026-02-19T13:58:42.944749Z",
+  "program":  "c:\\Users\\Talmid\\Test\\BlockBlast\\WandbTest.py",
+  "codePath":  "WandbTest.py",
+  "codePathLocal":  "WandbTest.py",
+  "git":  {
+    "remote":  "https://github.com/Idanh100/BlockBlast.git",
+    "commit":  "e0bacfec337b83bcc70496f127487d68aeb114e0"
+  },
+  "email":  "Idanhalfon2007@gmail.com",
+  "root":  "C:\\Users\\Talmid\\Test\\BlockBlast",
+  "host":  "User",
+  "executable":  "C:\\Users\\Talmid\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "writerId":  "85c82pkb0hnovi92xc85ewporfc6rjaj"
+}

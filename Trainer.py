@@ -8,6 +8,7 @@ from Replay_Buffer import ReplayBuffer
 from Model import DQN
 import copy
 import torch
+import wandb
 import os
 
 class Game:
@@ -19,6 +20,10 @@ class Game:
         graphics = Graphics()  # מחלקה שאחראית על הגרפיקה
         env = Environment(State())  # יצירת הסביבה עם מצב התחלתי
         run = True  # משתנה בוליאני שמנהל את לולאת המשחק
+        num = 1
+        Buffer_Path = "Data/Train{num}.ptn"
+        Checkpoint_Path = "Data/CheckPoint{num}.ptn"
+
 
         # אתחול הסביבה והמצב
 
@@ -33,6 +38,7 @@ class Game:
         epochs = 20000
         start_epoch = 0
         C = 3
+        epsilon_decay = 500  # used by Ai_Agent2.get_epsilon
         loss = torch.tensor(0)
         avg = 0
         scores, losses, avg_score = [], [], []
@@ -42,6 +48,29 @@ class Game:
         step = 0
         episode_rewards = []  # Track rewards for each episode
         
+        wandb_run = wandb.init(
+            # set the wandb project where this run will be logged
+            project="Space_Invaders",
+            resume=False, 
+            id='Space_invaders_21',
+            # track hyperparameters and run metadata
+            config={
+                "name": "Space_invaders_21",
+                "checkpoint_path": Checkpoint_Path,
+                "buffer_path": Buffer_Path,
+                "learning_rate": learning_rate,
+                "architecture": "FNN 128, 258, 512, 128, 64, 4",
+                "schedule": "5000, 10000, 15000 gamma=0.5",
+                "epochs": epochs,
+                "start_epoch": start_epoch,
+                "epsilon_decay": epsilon_decay,
+                "gamma": 0.99,
+                "batch_size": batch_size,
+                "C": C,
+            }
+        )
+
+
         # Initialize environment once
         env.reset()
             
@@ -86,6 +115,13 @@ class Game:
                     # End of episode - save metrics
                     scores.append(env.state.score)
                     episode_rewards.append(episode_reward)
+                    # log episode-level metrics
+                    wandb.log({
+                        "episode_reward": episode_reward,
+                        "score": env.state.score,
+                        "epoch": epoch,
+                        "step": step,
+                    })
                     break
                 
                 if len(buffer) < 5000:
@@ -97,6 +133,8 @@ class Game:
 
                 loss = player.model.loss(Q_values, rewards, Q_hat_Values, dones)
                 losses.append(loss.item())
+                # log training loss each update
+                wandb.log({"loss": loss.item(), "step": step})
                 
                 # Debug: print values if loss is 0
                 if loss.item() == 0:
@@ -130,12 +168,26 @@ class Game:
                 print(f"Epsilon: {epsilon:.4f}")
                 print(f"Buffer Size: {len(buffer)}")
                 print(f"Best Score: {max(scores) if scores else 0}")
+                # log aggregated metrics for this epoch
+                wandb.log({
+                    "avg_score": avg_score,
+                    "avg_reward": avg_reward,
+                    "avg_loss": avg_loss,
+                    "epsilon": epsilon,
+                    "buffer_size": len(buffer),
+                    "best_score": max(scores) if scores else 0,
+                    "epoch": epoch,
+                })
+            
             
             # After episode ends, reset for next episode
-            env.reset()
-                    
-                
-
+            
+            env.reset()       
+        # finished training loop, close wandb run if available
+        try:
+            wandb_run.finish()
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     game = Game()  # יצירת אובייקט של המשחק

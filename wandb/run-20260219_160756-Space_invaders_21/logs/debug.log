@@ -1,0 +1,11 @@
+2026-02-19 16:07:56,200 INFO    MainThread:7416 [wandb_setup.py:_flush():80] Current SDK version is 0.23.1
+2026-02-19 16:07:56,201 INFO    MainThread:7416 [wandb_setup.py:_flush():80] Configure stats pid to 7416
+2026-02-19 16:07:56,201 INFO    MainThread:7416 [wandb_setup.py:_flush():80] Loading settings from C:\Users\Talmid\.config\wandb\settings
+2026-02-19 16:07:56,202 INFO    MainThread:7416 [wandb_setup.py:_flush():80] Loading settings from C:\Users\Talmid\Test\BlockBlast\wandb\settings
+2026-02-19 16:07:56,202 INFO    MainThread:7416 [wandb_setup.py:_flush():80] Loading settings from environment variables
+2026-02-19 16:07:56,202 INFO    MainThread:7416 [wandb_init.py:setup_run_log_directory():714] Logging user logs to C:\Users\Talmid\Test\BlockBlast\wandb\run-20260219_160756-Space_invaders_21\logs\debug.log
+2026-02-19 16:07:56,205 INFO    MainThread:7416 [wandb_init.py:setup_run_log_directory():715] Logging internal logs to C:\Users\Talmid\Test\BlockBlast\wandb\run-20260219_160756-Space_invaders_21\logs\debug-internal.log
+2026-02-19 16:07:56,205 INFO    MainThread:7416 [wandb_init.py:init():841] calling init triggers
+2026-02-19 16:07:56,205 INFO    MainThread:7416 [wandb_init.py:init():846] wandb.init called with sweep_config: {}
+config: {'name': 'Space_invaders_21', 'checkpoint_path': 'Data/CheckPoint{num}.ptn', 'buffer_path': 'Data/Train{num}.ptn', 'learning_rate': 1e-05, 'architecture': 'FNN 128, 258, 512, 128, 64, 4', 'schedule': '5000, 10000, 15000 gamma=0.5', 'epochs': 20000, 'start_epoch': 0, 'epsilon_decay': 500, 'gamma': 0.99, 'batch_size': 50, 'C': 3, '_wandb': {}}
+2026-02-19 16:07:56,206 INFO    MainThread:7416 [wandb_init.py:init():889] starting backend
