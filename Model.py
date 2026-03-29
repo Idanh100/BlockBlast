@@ -57,6 +57,3 @@ class DQN(nn.Module):
     
     def save_param (self, path):
         self.DQN.save_params(path)
-
-    def load_params (self, path):
-        self.DQN.load_params(path)

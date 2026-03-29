@@ -31,7 +31,8 @@ class Game:
         elif menu_action == "PLAY":  # אם המשתמש בחר לשחק
             player = HumanAgent()  # יצירת שחקן אנושי
         elif menu_action == "TRAIN":  # אם המשתמש בחר באפשרות Train AI
-            player = Ai_Agent(None)  # יצירת שחקן Ai_Agent
+            player = Ai_Agent(train=False)  # יצירת שחקן Ai_Agent
+            player.load_model(f"Data/Model{20}.ptn")  # טעינת המודל המאומן
 
         # אתחול הסביבה והמצב
         env.reset()  # איפוס הסביבה
@@ -85,7 +86,8 @@ class Game:
                                     state = env.state  # קבלת המצב ההתחלתי
                                     game_over = False  # איפוס מצב סיום המשחק
                                 elif menu_action == "AI Play":  # אם המשתמש בחר באפשרות Train AI
-                                    player = Ai_Agent()  # יצירת שחקן Ai_Agent
+                                    player = Ai_Agent(train=False)  # יצירת שחקן Ai_Agent
+                                    player.load_model(f"Data/Model{20}.ptn")  # טעינת המודל המאומן
                                     env.reset()  # איפוס הסביבה
                                     state = env.state  # קבלת המצב ההתחלתי
                                     game_over = False  # איפוס מצב סיום המשחק
@@ -107,6 +109,7 @@ class Game:
                 elif action:  # אם השחקן ביצע פעולה
                     env.move(state, action)  # ביצוע הפעולה בסביבה
                     reward = env.Get_Reward_Args(action=action, state=env.state)
+                    pygame.time.delay(750)  # השהייה קצרה לפני התחלת המשחק
 
                     #inside move convert to pixels be sure that human works the same
                     # move to pixel in environment

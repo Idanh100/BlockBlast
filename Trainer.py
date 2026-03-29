@@ -1,5 +1,6 @@
 import pygame
 from Graphics2 import Graphics
+import Model
 from State2 import State
 from Environment2 import Environment
 from HumanAgent2 import HumanAgent
@@ -20,10 +21,9 @@ class Game:
         graphics = Graphics()  # מחלקה שאחראית על הגרפיקה
         env = Environment(State())  # יצירת הסביבה עם מצב התחלתי
         run = True  # משתנה בוליאני שמנהל את לולאת המשחק
-        num = 1
-        Buffer_Path = "Data/Train{num}.ptn"
-        Checkpoint_Path = "Data/CheckPoint{num}.ptn"
-
+        num = 21
+        Buffer_Path = f"Data/Train{num}.ptn"
+        Model_Path = f"Data/Model{num}.ptn"
 
         # אתחול הסביבה והמצב
 
@@ -52,11 +52,11 @@ class Game:
             # set the wandb project where this run will be logged
             project="Block_Blast",
             resume=False, 
-            id='Block_Blast_1',
+            id=f'Block_Blast_{num}',
             # track hyperparameters and run metadata
             config={
-                "name": "Block_Blast_1",
-                "checkpoint_path": Checkpoint_Path,
+                "name": f"Block_Blast_{num}",
+                "checkpoint_path": Model_Path,
                 "buffer_path": Buffer_Path,
                 "learning_rate": learning_rate,
                 "architecture": "FNN 128, 258, 512, 128, 64, 4",
@@ -67,9 +67,10 @@ class Game:
                 "gamma": 0.99,
                 "batch_size": batch_size,
                 "C": C,
-            }
+            },
         )
-
+        # Save initial model checkpoint
+        torch.save(player.model, Model_Path)
 
         # Initialize environment once
         env.reset()
@@ -174,10 +175,10 @@ class Game:
                     "avg_reward": avg_reward,
                     "avg_loss": avg_loss,
                     "epsilon": epsilon,
-                    "buffer_size": len(buffer),
                     "best_score": max(scores) if scores else 0,
-                    "epoch": epoch,
                 })
+                torch.save(player.model.state_dict(), Model_Path)
+                torch.save(buffer, "Data/Buffer.pth")
             
             
             # After episode ends, reset for next episode

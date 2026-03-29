@@ -8,7 +8,7 @@ from Model import DQN
 from Block import Block
 
 class Ai_Agent:
-    def __init__(self, model=None):
+    def __init__(self, model=None, train=True):
         """Initialize AI Agent.
         
         Args:
@@ -26,6 +26,7 @@ class Ai_Agent:
         self.model = model if model else DQN()  # יוצר DQN אם לא סופקה
         self.selected_block = None  # התאמה לממשק של Main2.py
         self.env = Environment(State())
+        self.train = train
         
     def Q (self, states, actions):
         """Get Q-values for given states and actions"""
@@ -54,7 +55,7 @@ class Ai_Agent:
         after_state_tensors = self.get_after_states(moves, state)
                 
         # בחר מהלך עם ה-Q-value הגבוה ביותר או אקראי עם הסתברות epsilon
-        if random.random() < self.get_epsilon(epoch):
+        if self.train and random.random() < self.get_epsilon(epoch):
             # בחירה אקראית
             best_idx = random.randint(0, len(moves) - 1)
             best_move = moves[best_idx]
@@ -134,3 +135,5 @@ class Ai_Agent:
             return end
         return start - (end - start) * (epoch / decay)
         
+    def load_model(self, file):
+        self.model.load_state_dict(torch.load(file))

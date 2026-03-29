@@ -9,7 +9,10 @@ from Graphics2 import Graphics
 import torch
 
 class Environment:
+    
     REWARD_EXPLODE = 10
+    REWARD_SQUARES_PER_BLOCK = 2
+    REWARD_SQUARES_IN_SAME_ROW_OR_COL = 1
     
     def __init__(self, state):
 
@@ -170,9 +173,9 @@ class Environment:
         return reward
 
     def Get_Reward(self, state, block, grid_x, grid_y):
-        reward = self.count_squares_of_block(block.shape)  # נקודות לפי כמות המשבצות שהונחו
-        reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))  # נקודות לפי כמות המשבצות שהיו לפני ההנחה
-        reward += self.num_explosions * 10  # נקודות לפי כמות הפיצוצים שקרו לאחר ההנחה
+        reward = self.count_squares_of_block(block.shape) * self.REWARD_SQUARES_PER_BLOCK  # נקודות לפי כמות המשבצות שהונחו
+        reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y)) * self.REWARD_SQUARES_IN_SAME_ROW_OR_COL  # נקודות לפי כמות המשבצות שהיו לפני ההנחה
+        reward += self.num_explosions * self.REWARD_EXPLODE  # נקודות לפי כמות הפיצוצים שקרו לאחר ההנחה
         return reward
 
     def count_squares_of_block(self, shape):

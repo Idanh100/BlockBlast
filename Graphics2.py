@@ -449,7 +449,7 @@ class Graphics:
         train_color = self.BLUE if not train_button.collidepoint(mouse_x, mouse_y) else (0, 0, 200)
         pygame.draw.rect(self.screen, train_color, train_button, border_radius=15)
         pygame.draw.rect(self.screen, self.WHITE, train_button, width=3, border_radius=15)
-        train_text = pygame.font.SysFont("Arial", 48).render("Train AI", True, self.WHITE)
+        train_text = pygame.font.SysFont("Arial", 48).render("AI Play", True, self.WHITE)
         train_text_rect = train_text.get_rect(center=train_button.center)
         self.screen.blit(train_text, train_text_rect)
 
