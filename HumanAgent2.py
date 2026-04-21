@@ -1,4 +1,5 @@
 import pygame
+from CONSTANTS import *
 
 class HumanAgent:
     def __init__(self):
@@ -9,7 +10,7 @@ class HumanAgent:
         self.GRID_ORIGIN_Y = self.height / 10
         self.GRID_SIZE = self.width / 30
         self.GRID_ORIGIN_X = (self.width / 2) - (self.GRID_SIZE * 4)
-        self.GRID_MARGIN = 4
+        self.GRID_MARGIN = GRID_MARGIN
 
         self.selected_block = None  # הבלוק שנבחר לגרירה
         self.offset_x = 0  # מרחק אופקי בין העכבר לבלוק

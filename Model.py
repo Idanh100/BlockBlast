@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from State2 import State
 from Environment2 import Environment
+from CONSTANTS import *
 
 class DQN(nn.Module):
     def __init__(self):
@@ -31,7 +32,7 @@ class DQN(nn.Module):
         All_After_States = self.fc3(All_After_States)
         return All_After_States
     
-    def loss(self, Q_values, rewards, Q_hat_values, dones, gamma=0.99):
+    def loss(self, Q_values, rewards, Q_hat_values, dones, gamma=GAMMA):
         """DQN Loss function
         
         Args:

@@ -11,6 +11,7 @@ import copy
 import torch
 import wandb
 import os
+from CONSTANTS import *
 
 class Game:
     def __init__(self):        
@@ -21,9 +22,9 @@ class Game:
         graphics = Graphics()  # מחלקה שאחראית על הגרפיקה
         env = Environment(State())  # יצירת הסביבה עם מצב התחלתי
         run = True  # משתנה בוליאני שמנהל את לולאת המשחק
-        num = 21
-        Buffer_Path = f"Data/Train{num}.ptn"
-        Model_Path = f"Data/Model{num}.ptn"
+        num = DEFAULT_MODEL_NUMBER
+        Buffer_Path = BUFFER_PATH_TEMPLATE.format(num)
+        Model_Path = MODEL_PATH_TEMPLATE.format(num)
 
         # אתחול הסביבה והמצב
 
@@ -31,26 +32,26 @@ class Game:
         player = Ai_Agent()
         player_hat = Ai_Agent()
         player_hat.model.load_state_dict(player.model.state_dict())
-        batch_size = 50
+        batch_size = BATCH_SIZE
         best_score = 0
         buffer = ReplayBuffer(path=None)
-        learning_rate = 0.00001
-        epochs = 20000
+        learning_rate = LEARNING_RATE
+        epochs = NUM_EPOCHS
         start_epoch = 0
-        C = 3
-        epsilon_decay = 500  # used by Ai_Agent2.get_epsilon
+        C = NETWORK_UPDATE_FREQUENCY
+        epsilon_decay = EPSILON_DECAY  # used by Ai_Agent2.get_epsilon
         loss = torch.tensor(0)
         avg = 0
         scores, losses, avg_score = [], [], []
         optim = torch.optim.Adam(player.model.parameters(), lr=learning_rate)
         # scheduler = torch.optim.lr_scheduler.StepLR(optim,100000, gamma=0.50)
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optim,[5000*1000, 10000*1000, 15000*1000], gamma=0.5)
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optim,[m*1000 for m in LR_SCHEDULER_MILESTONES], gamma=LR_SCHEDULER_GAMMA)
         step = 0
         episode_rewards = []  # Track rewards for each episode
         
         wandb_run = wandb.init(
             # set the wandb project where this run will be logged
-            project="Block_Blast",
+            project=WANDB_PROJECT,
             resume=False, 
             id=f'Block_Blast_{num}',
             # track hyperparameters and run metadata
@@ -60,11 +61,11 @@ class Game:
                 "buffer_path": Buffer_Path,
                 "learning_rate": learning_rate,
                 "architecture": "FNN 128, 258, 512, 128, 64, 4",
-                "schedule": "5000, 10000, 15000 gamma=0.5",
+                "schedule": f"Milestones: {LR_SCHEDULER_MILESTONES} gamma={LR_SCHEDULER_GAMMA}",
                 "epochs": epochs,
                 "start_epoch": start_epoch,
                 "epsilon_decay": epsilon_decay,
-                "gamma": 0.99,
+                "gamma": GAMMA,
                 "batch_size": batch_size,
                 "C": C,
             },
@@ -125,7 +126,7 @@ class Game:
                     })
                     break
                 
-                if len(buffer) < 5000:
+                if len(buffer) < MIN_BUFFER_SIZE_FOR_TRAINING:
                     continue
 
                 states, actions, rewards, next_states, dones = buffer.sample(batch_size)

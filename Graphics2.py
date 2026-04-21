@@ -1,5 +1,6 @@
 import pygame
 import random  # ייבוא המודול random
+from CONSTANTS import *
 
 class Graphics:
     def __init__(self):
@@ -10,28 +11,28 @@ class Graphics:
         self.GRID_ORIGIN_Y = self.height / 10
         self.GRID_SIZE = self.width / 30
         self.GRID_ORIGIN_X = (self.width / 2) - (self.GRID_SIZE * 4)
-        self.GRID_MARGIN = 4
+        self.GRID_MARGIN = GRID_MARGIN
 
         self.clock = pygame.time.Clock()
-        self.clock.tick(60)  # מגביל ל־60 FPS
+        self.clock.tick(FPS)  # מגביל ל־FPS
 
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Block Blast Game")
 
-        self.WHITE = (255, 255, 255)
-        self.DARK_BLUE = (35, 50, 95)  # Background
-        self.DARKER_BLUE = (25, 35, 70)  # Grid background
-        self.LIGHT_BLUE = (80, 100, 170)  # Accent
-        self.RED = (220, 70, 70)
-        self.YELLOW = (240, 200, 50)
-        self.ORANGE = (240, 130, 50)
-        self.GREEN = (100, 200, 100)
-        self.BLUE = (100, 100, 240)
-        self.PURPLE = (180, 100, 240)
-        self.HIGHLIGHT_COLOR = (100, 150, 255)
-        self.INVALID_HIGHLIGHT = (150, 50, 50, 128)
-        self.COMPLETE_LINE_HIGHLIGHT = (120, 240, 120, 160)
-        self.GOLD_COLOR = (255, 215, 0)
+        self.WHITE = COLOR_WHITE
+        self.DARK_BLUE = COLOR_DARK_BLUE
+        self.DARKER_BLUE = COLOR_DARKER_BLUE
+        self.LIGHT_BLUE = COLOR_LIGHT_BLUE
+        self.RED = COLOR_RED
+        self.YELLOW = COLOR_YELLOW
+        self.ORANGE = COLOR_ORANGE
+        self.GREEN = COLOR_GREEN
+        self.BLUE = COLOR_BLUE
+        self.PURPLE = COLOR_PURPLE
+        self.HIGHLIGHT_COLOR = COLOR_HIGHLIGHT
+        self.INVALID_HIGHLIGHT = COLOR_INVALID_HIGHLIGHT
+        self.COMPLETE_LINE_HIGHLIGHT = COLOR_COMPLETE_LINE_HIGHLIGHT
+        self.GOLD_COLOR = COLOR_GOLD
 
         self.frame_count = 0  # מונה פריימים
         self.background_blocks = []  # בלוקים ברקע

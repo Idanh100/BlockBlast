@@ -6,6 +6,7 @@ from State2 import State
 from Environment2 import Environment
 from Model import DQN
 from Block import Block
+from CONSTANTS import *
 
 class Ai_Agent:
     def __init__(self, model=None, train=True):
@@ -21,7 +22,7 @@ class Ai_Agent:
         self.GRID_ORIGIN_Y = self.height / 10
         self.GRID_SIZE = self.width / 30
         self.GRID_ORIGIN_X = (self.width / 2) - (self.GRID_SIZE * 4)
-        self.GRID_MARGIN = 4
+        self.GRID_MARGIN = GRID_MARGIN
 
         self.model = model if model else DQN()  # יוצר DQN אם לא סופקה
         self.selected_block = None  # התאמה לממשק של Main2.py
@@ -130,7 +131,7 @@ class Ai_Agent:
         # החזר את הפעולה בפורמט שenv.move מצפה
         return (block, (pixel_x, pixel_y))
     
-    def get_epsilon (self, epoch = 0, start=1, end=0.01, decay = 500):
+    def get_epsilon (self, epoch = 0, start=EPSILON_START, end=EPSILON_END, decay = EPSILON_DECAY):
         if epoch > decay:
             return end
         return start - (end - start) * (epoch / decay)
