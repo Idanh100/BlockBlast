@@ -85,6 +85,13 @@ class Game:
                     if event.type == pygame.QUIT:  # אם המשתמש סגר את החלון
                         pygame.quit()
                         return
+                    
+                    # בדיקה אם המשתמש לחץ על כפתור סגירה
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        close_button_rect = graphics.get_close_button_rect()
+                        if close_button_rect.collidepoint(event.pos):
+                            pygame.quit()
+                            return
                 
                 # אם המשחק ממשיך
                 graphics.draw_game(env.state, player.selected_block)  # ציור מצב המשחק הנוכחי

@@ -31,7 +31,7 @@ class Game:
             run = False
         elif menu_action == "PLAY":  # אם המשתמש בחר לשחק
             player = HumanAgent()  # יצירת שחקן אנושי
-        elif menu_action == "TRAIN":  # אם המשתמש בחר באפשרות Train AI
+        elif menu_action == "AI_PLAY":  # אם המשתמש בחר באפשרות AI_PLAY
             player = Ai_Agent(train=False)  # יצירת שחקן Ai_Agent
             player.load_model(MODEL_PATH_TEMPLATE.format(DEFAULT_MODEL_NUMBER))  # טעינת המודל המאומן
 
@@ -57,7 +57,7 @@ class Game:
                 break
             
             if game_over:  # אם המשחק נגמר
-                # תמיד הצגת מסך Game Over, גם ב-TRAIN וגם ב-PLAY
+                # תמיד הצגת מסך Game Over, גם ב-AI_PLAY וגם ב-PLAY
                 # הדפסת הניקוד של המשתמש
                 # print(f"Game Over! Your Score: {state.score}")
 
@@ -82,14 +82,14 @@ class Game:
                                 env.reset()  # איפוס הסביבה
                                 state = env.state  # קבלת המצב ההתחלתי
                                 game_over = False  # איפוס מצב סיום המשחק
-                            elif menu_action == "TRAIN":  # אם המשתמש בחר ב-TRAIN
-                                player = Ai_Agent(train=False)  # יצירת שחקן Ai_Agent
+                            elif menu_action == "AI_PLAY":  # אם המשתמש בחר ב-AI_PLAY
+                                player = Ai_Agent(AI_PLAY=False)  # יצירת שחקן Ai_Agent
                                 player.load_model(MODEL_PATH_TEMPLATE.format(DEFAULT_MODEL_NUMBER))  # טעינת המודל המאומן
                                 env.reset()  # איפוס הסביבה
                                 state = env.state  # קבלת המצב ההתחלתי
                                 game_over = False  # איפוס מצב סיום המשחק
                             elif menu_action == "AI Play":  # אם המשתמש בחר באפשרות AI Play
-                                player = Ai_Agent(train=False)  # יצירת שחקן Ai_Agent
+                                player = Ai_Agent(AI_PLAY=False)  # יצירת שחקן Ai_Agent
                                 player.load_model(MODEL_PATH_TEMPLATE.format(DEFAULT_MODEL_NUMBER))  # טעינת המודל המאומן
                                 env.reset()  # איפוס הסביבה
                                 state = env.state  # קבלת המצב ההתחלתי
@@ -129,7 +129,7 @@ class Game:
         """
         while True:
             # ציור התפריט הראשי
-            play_button, train_button, quit_button = graphics.draw_main_menu()
+            play_button, AI_PLAY_button, quit_button = graphics.draw_main_menu()
 
             for event in pygame.event.get():  # טיפול באירועים
                 if event.type == pygame.QUIT:  # אם המשתמש סגר את החלון
@@ -138,8 +138,8 @@ class Game:
                     mouse_x, mouse_y = event.pos  # קבלת מיקום הלחיצה
                     if play_button.collidepoint(mouse_x, mouse_y):  # אם המשתמש לחץ על כפתור Play
                         return "PLAY"
-                    elif train_button.collidepoint(mouse_x, mouse_y):  # אם המשתמש לחץ על כפתור Train AI
-                        return "TRAIN"
+                    elif AI_PLAY_button.collidepoint(mouse_x, mouse_y):  # אם המשתמש לחץ על כפתור AI_PLAY AI
+                        return "AI_PLAY"
                     elif quit_button.collidepoint(mouse_x, mouse_y):  # אם המשתמש לחץ על כפתור Quit
                         return "QUIT"
 
