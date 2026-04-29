@@ -15,20 +15,17 @@ from CONSTANTS import *
 
 class Game:
     def __init__(self):        
-        pass  # אתחול המחלקה Game (כרגע אין פעולות באתחול)
+        pass
 
     def train(self): 
-        # אתחול רכיבי המשחק
-        graphics = Graphics()  # מחלקה שאחראית על הגרפיקה
-        env = Environment(State())  # יצירת הסביבה עם מצב התחלתי
-        run = True  # משתנה בוליאני שמנהל את לולאת המשחק
+        graphics = Graphics()
+        env = Environment(State())
+        run = True
         num = DEFAULT_MODEL_NUMBER
         Buffer_Path = BUFFER_PATH_TEMPLATE.format(num)
         Model_Path = MODEL_PATH_TEMPLATE.format(num)
 
-        # אתחול הסביבה והמצב
-
-        game_over = False  # משתנה שמנהל את מצב סיום המשחק
+        game_over = False
         player = Ai_Agent()
         player_hat = Ai_Agent()
         player_hat.model.load_state_dict(player.model.state_dict())

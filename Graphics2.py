@@ -1,11 +1,11 @@
 import pygame
-import random  # ייבוא המודול random
+import random
 from CONSTANTS import *
 
 class Graphics:
     def __init__(self):
         pygame.init()
-        info = pygame.display.get_desktop_sizes()[0]  # אם יש כמה מסכים – לוקח את הראשון
+        info = pygame.display.get_desktop_sizes()[0]
         self.width, self.height = info
 
         self.GRID_ORIGIN_Y = self.height / 10
@@ -14,13 +14,13 @@ class Graphics:
         self.GRID_MARGIN = GRID_MARGIN
 
         self.clock = pygame.time.Clock()
-        self.clock.tick(FPS)  # מגביל ל־FPS
+        self.clock.tick(FPS)
 
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Block Blast Game")
 
-        self.frame_count = 0  # מונה פריימים
-        self.background_blocks = []  # בלוקים ברקע
+        self.frame_count = 0
+        self.background_blocks = []
         
         # Reference to Environment for validation checks
         from Environment2 import Environment
@@ -38,17 +38,13 @@ class Graphics:
         for block in state.Blocks:
             self._draw_block(block)
         
-        # הדגשת שורות ועמודות שיתמלאו אם הבלוק יונח
         if dragging_block:
             self._highlight_full_lines(state, dragging_block)
         
-        # ציור הניקוד בצד שמאל במרכז
         self._draw_score(state.score)
 
-        # ציור אנימציית Combo אם יש
         self._draw_combo_animation(state)
         
-        # ציור כפתור X להסגרה וקבלת ה-rect שלו
         close_button_rect = self._draw_close_button()
         
         return close_button_rect
@@ -58,36 +54,31 @@ class Graphics:
         Draw the game grid, including the blocks that have been fixed to the board.
         If a block is being dragged, highlight the potential placement.
         """
-        grid = state.Board  # הלוח הנוכחי
+        grid = state.Board
         grid_height, grid_width = grid.shape
 
         grid_width_px = grid_width * self.GRID_SIZE
         grid_height_px = grid_height * self.GRID_SIZE
         grid_rect = pygame.Rect(self.GRID_ORIGIN_X, self.GRID_ORIGIN_Y, grid_width_px, grid_height_px)
-        pygame.draw.rect(self.screen, COLOR_DARKER_BLUE, grid_rect)  # רקע הלוח
+        pygame.draw.rect(self.screen, COLOR_DARKER_BLUE, grid_rect)
 
-        # Highlight potential placement if dragging a block
         if dragging_block:
             self._highlight_potential_placement(state, dragging_block)
 
-        # ציור המשבצות בלוח
         for y in range(grid_height):
             for x in range(grid_width):
                 cell_value = grid[y][x]
-                if cell_value != 0:  # אם התא אינו ריק
-                    color = self.get_color_from_id(cell_value)  # קבלת הצבע לפי מזהה
+                if cell_value != 0:
+                    color = self.get_color_from_id(cell_value)
                     rect = pygame.Rect(
                         self.GRID_ORIGIN_X + x * self.GRID_SIZE + self.GRID_MARGIN,
                         self.GRID_ORIGIN_Y + y * self.GRID_SIZE + self.GRID_MARGIN,
                         self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
                         self.GRID_SIZE - 1.5 * self.GRID_MARGIN
                     )
-                    # ציור התא בצבע המתאים עם קצוות מעוגלות
                     pygame.draw.rect(self.screen, color, rect, border_radius=5)
-                    # ציור מסגרת התא עם קצוות מעוגלות
                     pygame.draw.rect(self.screen, COLOR_DARK_BLUE, rect, width=2, border_radius=5)
 
-        # ציור קווי הרשת
         for x in range(grid_width + 1):
             pygame.draw.line(self.screen, COLOR_DARK_BLUE,
                              (self.GRID_ORIGIN_X + x * self.GRID_SIZE, self.GRID_ORIGIN_Y),
@@ -129,33 +120,30 @@ class Graphics:
             (100, 100, 240),  # BLUE
             (180, 100, 240)   # PURPLE
         ]
-        return colors[(int(color_id)) % len(colors)]  # המרת color_id ל-int
+        return colors[(int(color_id)) % len(colors)]
 
     def _draw_score(self, score):
         """
         Draw the score on the right side of the screen, aligned with the top of the grid,
         and centered between the right edge of the grid and the right edge of the screen.
         """
-        font = pygame.font.SysFont("Arial", 48, bold=True)  # גופן גדול ובולט
+        font = pygame.font.SysFont("Arial", 48, bold=True)
         score_text = font.render(f"Score: {score}", True, COLOR_WHITE)
         text_rect = score_text.get_rect()
 
-        # חישוב המיקום: מרכז בין הקצה הימני של הלוח לקצה הימני של המסך
-        grid_right_x = self.GRID_ORIGIN_X + self.GRID_SIZE * 8  # הקצה הימני של הלוח
-        center_x = (grid_right_x + self.width) / 2  # מרכז בין הקצה הימני של הלוח לקצה המסך
-        text_rect.midtop = (center_x, self.GRID_ORIGIN_Y + 40)  # הוספת מרווח של 40 פיקסלים למטה
+        grid_right_x = self.GRID_ORIGIN_X + self.GRID_SIZE * 8
+        center_x = (grid_right_x + self.width) / 2
+        text_rect.midtop = (center_x, self.GRID_ORIGIN_Y + 40)
 
         # רקע לניקוד
         background_rect = pygame.Rect(
-            text_rect.x - 20, text_rect.y - 20,  # הוספת שוליים מסביב לטקסט
+            text_rect.x - 20, text_rect.y - 20,
             text_rect.width + 40, text_rect.height + 40
         )
         pygame.draw.rect(self.screen, COLOR_DARKER_BLUE, background_rect, border_radius=15)
 
-        # מסגרת מסביב לרקע
         pygame.draw.rect(self.screen, COLOR_GOLD, background_rect, width=5, border_radius=15)
 
-        # ציור הטקסט
         self.screen.blit(score_text, text_rect)
 
     def draw_game_over(self, state):

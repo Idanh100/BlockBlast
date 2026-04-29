@@ -18,9 +18,9 @@ class DQN(nn.Module):
 
         self.env = Environment(State())
         self.Current_State = State()
-        self.State_Tensor = self.Current_State.TensorState(self.Current_State.Board)  # יוצר tensor של הלוח בstate
-        self.All_Moves = self.env.GetAllPossibleMoves(self.Current_State)  # מקבל את כל המהלכים החוקיים בלוח
-        self.All_After_States = self.env.AfterState(self.Current_State, self.All_Moves)  # מקבל את כל המצבים האפשריים לאחר כל המהלכים
+        self.State_Tensor = self.Current_State.TensorState(self.Current_State.Board)
+        self.All_Moves = self.env.GetAllPossibleMoves(self.Current_State)
+        self.All_After_States = self.env.AfterState(self.Current_State, self.All_Moves)
         
         
     def forward(self, All_After_States):

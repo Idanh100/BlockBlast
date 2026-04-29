@@ -21,28 +21,24 @@ class Environment:
 
         
         pygame.init()
-        info = pygame.display.get_desktop_sizes()[0]  # אם יש כמה מסכים – לוקח את הראשון
+        info = pygame.display.get_desktop_sizes()[0]
         self.width, self.height = info
 
         self.GRID_ORIGIN_Y = self.height / 10
         self.GRID_SIZE = self.width / 30
         self.GRID_ORIGIN_X = (self.width / 2) - (self.GRID_SIZE * 4)
         self.GRID_MARGIN = GRID_MARGIN
-        # track explosions and last pre-placement sum for reward calculation
         self.num_explosions = 0
         self.last_preplacement_sum = 0
-        self.last_move_valid = False  # לעקוב אם המהלך האחרון היה חוקי
+        self.last_move_valid = False
 
     def all_shapes(self):
         """Generate all possible block shapes for the game."""
         return BLOCK_SHAPES
     
     def reset(self):
-        """
-        Reset the game state, including the board and blocks.
-        """
-        self.state = State()  # יצירת אובייקט חדש של State
-        self.set_random_block()  # יצירת בלוקים חדשים
+        self.state = State()
+        self.set_random_block()
 
     def shutdown(self):
         pygame.quit()
@@ -61,7 +57,7 @@ class Environment:
         for i, block in enumerate(blocks):
             rect = pygame.Rect(start_x + i * spacing, start_y, 50, 50)
             new_block = Block(block, rect, i + 1)
-            new_block.initial_position = rect.copy()  # שמירת המיקום ההתחלתי
+            new_block.initial_position = rect.copy()
             blocks_lst.append(new_block)
 
         state.Blocks = set(blocks_lst)
@@ -69,40 +65,31 @@ class Environment:
     def move(self, state: State, action: tuple):
         block, position = action
 
-        # המרת מיקום פיקסלים למיקום רשת
         grid_x = int((position[0] - self.GRID_ORIGIN_X) / self.GRID_SIZE)
         grid_y = int((position[1] - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
 
-        # בדיקת חוקיות המהלך
-        filled_count = 0  # Initialize to 0 for invalid moves
+        filled_count = 0
         if self.is_valid_move(state, block, (grid_x, grid_y)):
-            # count occupied cells in the rows/cols covered by the shape BEFORE placement
             filled_count = self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))
             self.fix_block_to_board(state, block, (grid_x, grid_y))
             self.print_block_squares(block.shape)
 
-            # בדיקה אם יש שורות שצריך לפוצץ
             num_expl = self.check_and_explode_rows(state)
             self.num_explosions = num_expl
-            self.last_move_valid = True  # המהלך היה חוקי
+            self.last_move_valid = True
         else:
-            # החזרת הבלוק למיקומו ההתחלתי הקבוע
             block.rect = block.initial_position.copy()
-            self.last_move_valid = False  # המהלך לא היה חוקי
-            self.num_explosions = 0  # אין פיצוצים במהלך לא חוקי
+            self.last_move_valid = False
+            self.num_explosions = 0
 
-        # בדיקה אם צריך ליצור בלוקים חדשים
         self.check_and_generate_blocks()
-        # (no per-turn print here)
         return filled_count
     
     def move_legal(self, state: State, action: tuple):
         block, position = action
 
-        # המרת מיקום פיקסלים למיקום רשת
         grid_x = int((position[0] - self.GRID_ORIGIN_X) / self.GRID_SIZE)
         grid_y = int((position[1] - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
-        # count before placing so the block's own cells are not included
         filled_count = self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))
         self.fix_block_to_board(state, block, (grid_x, grid_y))
         self.check_and_explode_rows(state)
@@ -112,13 +99,11 @@ class Environment:
         return reward
 
     def Get_Reward_Args(self, state: State, action: tuple):
-        # אם המהלך האחרון לא היה חוקי, אין reward
         if not self.last_move_valid:
             return 0
         
         block, position = action
 
-        # המרת מיקום פיקסלים למיקום רשת
         grid_x = int((position[0] - self.GRID_ORIGIN_X) / self.GRID_SIZE)
         grid_y = int((position[1] - self.GRID_ORIGIN_Y) / self.GRID_SIZE)
 
@@ -126,9 +111,9 @@ class Environment:
         return reward
 
     def Get_Reward(self, state, block, grid_x, grid_y):
-        reward = self.count_squares_of_block(block.shape) * self.REWARD_SQUARES_PER_BLOCK  # נקודות לפי כמות המשבצות שהונחו
-        reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y)) * self.REWARD_SQUARES_IN_SAME_ROW_OR_COL  # נקודות לפי כמות המשבצות שהיו לפני ההנחה
-        reward += self.num_explosions * self.REWARD_EXPLODE  # נקודות לפי כמות הפיצוצים שקרו לאחר ההנחה
+        reward = self.count_squares_of_block(block.shape) * self.REWARD_SQUARES_PER_BLOCK
+        reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y)) * self.REWARD_SQUARES_IN_SAME_ROW_OR_COL
+        reward += self.num_explosions * self.REWARD_EXPLODE
         return reward
 
     def count_squares_of_block(self, shape):
@@ -191,7 +176,7 @@ class Environment:
         Check if placing the block at the given position is a valid move.
         """
         board = state.Board
-        grid_x, grid_y = position  # המיקום על הלוח (קואורדינטות רשת)
+        grid_x, grid_y = position
 
         # Support both Block and SimpleNamespace-like objects that carry a `shape` attribute
         shape = getattr(block, 'shape', None)
@@ -215,112 +200,77 @@ class Environment:
         return True
 
     def fix_block_to_board(self, state: State, block: Block, position: tuple):
-        """
-        Fix the block to the board at the given position, making it immovable.
-
-        Args:
-            state (State): The current game state.
-            block (Block): The block to fix to the board.
-            position (tuple): The (x, y) position where the block is to be fixed.
-        """
         board = state.Board
-        grid_x, grid_y = position  # המיקום על הלוח (קואורדינטות רשת)
-        placed_cells = 0  # סופר את כמות המשבצות שהונחו
+        grid_x, grid_y = position
+        placed_cells = 0
 
-        # עדכון הלוח עם הבלוק
         for y, row in enumerate(block.shape):
             for x, cell in enumerate(row):
-                if cell == 1:  # תא פעיל בבלוק
+                if cell == 1:
                     board_x = grid_x + x
                     board_y = grid_y + y
                     if 0 <= board_x < len(board[0]) and 0 <= board_y < len(board):
-                        board[board_y][board_x] = block.color_id  # עדכון התא בלוח עם מזהה הצבע
-                        placed_cells += 1  # עדכון כמות המשבצות שהונחו
+                        board[board_y][board_x] = block.color_id
+                        placed_cells += 1
 
-        # עדכון הניקוד
         state.score += placed_cells
 
-        # הסרת הבלוק מרשימת הבלוקים
         if block in state.Blocks:
             state.Blocks.remove(block)
 
     def check_and_generate_blocks(self):
-        """
-        Check if there are no more blocks available and generate new ones if needed.
-        """
-        if not self.state.Blocks:  # אם אין בלוקים ברשימה
+        if not self.state.Blocks:
             self.set_random_block()
 
     def check_and_explode_rows(self, state: State):
-        """
-        Check for full rows or columns, explode them, and update the score.
-        """
         board = state.Board
-        rows_to_explode = [y for y in range(board.shape[0]) if all(board[y, :] != 0)] # use numpy for efficient row checking
-        cols_to_explode = [x for x in range(board.shape[1]) if all(board[:, x] != 0)] # use numpy for efficient column checking
+        rows_to_explode = [y for y in range(board.shape[0]) if all(board[y, :] != 0)]
+        cols_to_explode = [x for x in range(board.shape[1]) if all(board[:, x] != 0)]
 
-        # פיצוץ שורות
         for row in rows_to_explode:
             board[row, :] = 0
 
-        # פיצוץ עמודות
         for col in cols_to_explode:
             board[:, col] = 0
 
-        # עדכון ניקוד
         num_explosions = len(rows_to_explode) + len(cols_to_explode)
         if num_explosions > 0:
-            state.turns_since_last_explosion = 0  # איפוס ספירת התורות
+            state.turns_since_last_explosion = 0
             if state.in_combo:
                 state.combo_count += num_explosions
             else:
                 state.combo_count = num_explosions
 
-            # חישוב ניקוד Combo
             for i in range(num_explosions):
                 state.score += (state.combo_count + i) * 10
 
-            state.in_combo = True  # הפעלת Combo
+            state.in_combo = True
         else:
             state.turns_since_last_explosion += 1
-            if state.turns_since_last_explosion > 2:  # סיום Combo לאחר 2 תורות ללא פיצוץ
+            if state.turns_since_last_explosion > 2:
                 state.in_combo = False
                 state.combo_count = 0
         return num_explosions
 
     def is_game_over(self, state: State) -> bool:
-        """
-        Check if the game is over. The game ends when there is no space on the board
-        to place any of the current blocks.
-
-        Args:
-            state (State): The current game state.
-
-        Returns:
-            bool: True if the game is over, False otherwise.
-        """
         board = state.Board
         for block in state.Blocks:
             for y in range(len(board)):
                 for x in range(len(board[0])):
                     if self.is_valid_move(state, block, (x, y)):
-                        return False  # יש מקום להניח לפחות בלוק אחד
+                        return False
         print("Game Over! Score:", state.score)
-        return True  # אין מקום להניח אף בלוק
+        return True
 
     def GetAllPossibleMoves(self, state: State):
-        """
-        החזר את כל המהלכים החוקיים על הלוח הנוכחי עבור כל הצורות האפשריות.
-        """
-        board = state.Board # מגדיר את הלוח הקיים 
-        shapes = self.all_shapes() #יוצר רשימה של כל הצורות 
-        legal_moves = [] # יוצר רשימה של כל המהלכים החוקיים 
+        board = state.Board
+        shapes = self.all_shapes()
+        legal_moves = []
 
-        for name, shape in shapes.items(): # על כל צורה והשם שלה 
+        for name, shape in shapes.items():
             shape_h = len(shape)
             shape_w = len(shape[0]) if shape_h > 0 else 0
 
-            # עבור כל מיקום אפשרי שבו תיבת ה-bounding של הצורה נכנסת ללוח
             max_y = board.shape[0] - shape_h
             max_x = board.shape[1] - shape_w
             if max_y < 0 or max_x < 0:
@@ -329,38 +279,28 @@ class Environment:
             for y in range(0, max_y + 1):
                 for x in range(0, max_x + 1):
                     dummy = SimpleNamespace(shape=shape)
-                    # בדיקה חוקיות המהלך בעזרת is_valid_move שמתבססת על ה-shape
                     if self.is_valid_move(state, dummy, (x, y)):
                         legal_moves.append((name, shape, (x, y)))
 
         return tuple(legal_moves)
 
     def AfterState(self, state: State, moves):
-        """
-        קבל את כל המהלכים (כפי שמוחזרים מ-`GetAllPossibleMoves`) והחזר רשימה של
-        כל ה-`State` הפוטנציאליים אשר היו מתקבלים אם השחקן היה מבצע כל מהלך.
-        """
         resulting_states = []
-        for mv in moves: # mv => (name, shape, (x, y))
+        for mv in moves:
             try:
                 name, shape, pos = mv
             except Exception:
                 continue
             x, y = pos
 
-            # העתק עמוק של ה-State כדי לא לשנות את המקור
             new_state = copy.deepcopy(state)
 
-            # אובייקט דמה המייצג בלוק לצורך הכנסת הצורה אל הלוח
             dummy_block = Block(shape, pygame.Rect(0, 0, 0, 0), 1)
 
-            # עדכון הלוח לפי המהלך (זה יעדכן גם את new_state.score)
             self.fix_block_to_board(new_state, dummy_block, (x, y))
 
-            # בדיקה ופיצוץ שורות/עמודות במידה וקיימות
             self.check_and_explode_rows(new_state)
 
-            # אם אין בלוקים ב-new_state, צור חדשים (השתמש ב-set_random_block עם פרמטר)
             if not new_state.Blocks:
                 self.set_random_block(new_state)
 
