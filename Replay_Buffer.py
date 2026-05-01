@@ -23,12 +23,12 @@ class ReplayBuffer:
         if (batch_size > self.__len__()):
             batch_size = self.__len__()
         state_tensors, action_tensors, reward_tensors, next_state_tensors, dones_tensor = zip(*random.sample(self.buffer, batch_size))
-        states = torch.cat(state_tensors, dim=0)  # states are [1, 8, 8] each, cat along dim 0 -> [batch, 8, 8]
-        states = states.unsqueeze(1)  # add channel dimension -> [batch, 1, 8, 8]
+        states = torch.cat(state_tensors, dim=0)
+        states = states.unsqueeze(1) 
         actions = torch.vstack(action_tensors)
         rewards = torch.vstack(reward_tensors)
         next_states = torch.cat(next_state_tensors, dim=0)
-        next_states = next_states.unsqueeze(1)  # add channel dimension -> [batch, 1, 8, 8]
+        next_states = next_states.unsqueeze(1)
         dones = torch.vstack(dones_tensor)
         return states, actions, rewards, next_states, dones
 

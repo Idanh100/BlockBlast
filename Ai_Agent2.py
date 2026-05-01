@@ -10,12 +10,6 @@ from CONSTANTS import *
 
 class Ai_Agent:
     def __init__(self, model=None, train=True):
-        """Initialize AI Agent.
-        
-        Args:
-            model: DQN model instance for choosing actions. If None, creates a new one.
-        """
-        # pygame.init()
         info = pygame.display.get_desktop_sizes()[0]
         self.width, self.height = info
 

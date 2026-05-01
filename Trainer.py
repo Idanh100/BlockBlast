@@ -36,22 +36,19 @@ class Game:
         epochs = NUM_EPOCHS
         start_epoch = 0
         C = NETWORK_UPDATE_FREQUENCY
-        epsilon_decay = EPSILON_DECAY  # used by Ai_Agent2.get_epsilon
+        epsilon_decay = EPSILON_DECAY
         loss = torch.tensor(0)
         avg = 0
         scores, losses, avg_score = [], [], []
         optim = torch.optim.Adam(player.model.parameters(), lr=learning_rate)
-        # scheduler = torch.optim.lr_scheduler.StepLR(optim,100000, gamma=0.50)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optim,[m*1000 for m in LR_SCHEDULER_MILESTONES], gamma=LR_SCHEDULER_GAMMA)
         step = 0
-        episode_rewards = []  # Track rewards for each episode
+        episode_rewards = []
         
         wandb_run = wandb.init(
-            # set the wandb project where this run will be logged
             project=WANDB_PROJECT,
             resume=False, 
             id=f'Block_Blast_{num}',
-            # track hyperparameters and run metadata
             config={
                 "name": f"Block_Blast_{num}",
                 "checkpoint_path": Model_Path,
@@ -67,32 +64,27 @@ class Game:
                 "C": C,
             },
         )
-        # Save initial model checkpoint
         torch.save(player.model, Model_Path)
 
-        # Initialize environment once
         env.reset()
             
         for epoch in range(epochs):
             state = env.state.copy()
-            episode_reward = 0  # Track reward for this episode
-            # לולאת המשחק הראשית - משחק אחד
+            episode_reward = 0
             while True:
-                for event in pygame.event.get():  # טיפול באירועים
-                    if event.type == pygame.QUIT:  # אם המשתמש סגר את החלון
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
                         pygame.quit()
                         return
                     
-                    # בדיקה אם המשתמש לחץ על כפתור סגירה
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         close_button_rect = graphics.get_close_button_rect()
                         if close_button_rect.collidepoint(event.pos):
                             pygame.quit()
                             return
                 
-                # אם המשחק ממשיך
-                graphics.draw_game(env.state, player.selected_block)  # ציור מצב המשחק הנוכחי
-                pygame.display.flip()  # עדכון המסך
+                graphics.draw_game(env.state, player.selected_block)
+                pygame.display.flip()
                     
                 action, after_state_tensor = player.get_action_train(state=env.state, epoch=epoch)
                 env.move(action=action, state=env.state)
@@ -101,11 +93,9 @@ class Game:
                 episode_reward += reward
                 next_state = env.state.copy()
                 
-                # Convert states to tensors for storage in buffer
                 state_tensor = state.TensorState(state.Board).view(1, 8, 8)
                 next_state_tensor = next_state.TensorState(next_state.Board).view(1, 8, 8)
                 
-                # Extract action coordinates and convert to tensor
                 block, (pixel_x, pixel_y) = action
                 action_tensor = torch.tensor([pixel_x, pixel_y], dtype=torch.float32).view(1, 2)
                 reward_tensor = torch.tensor(reward, dtype=torch.float32).view(1, 1)
@@ -114,14 +104,11 @@ class Game:
                 buffer.push(state_tensor, action_tensor, reward_tensor, 
                             next_state_tensor, done_tensor)
                 
-                # Update state for next step
                 state = next_state
                 
                 if done:
-                    # End of episode - save metrics
                     scores.append(env.state.score)
                     episode_rewards.append(episode_reward)
-                    # log episode-level metrics
                     wandb.log({
                         "episode_reward": episode_reward,
                         "score": env.state.score,
@@ -139,10 +126,8 @@ class Game:
 
                 loss = player.model.loss(Q_values, rewards, Q_hat_Values, dones)
                 losses.append(loss.item())
-                # log training loss each update
                 wandb.log({"loss": loss.item(), "step": step})
                 
-                # Debug: print values if loss is 0
                 if loss.item() == 0:
                     print(f"\n!!! ZERO LOSS DETECTED !!!")
                     print(f"Q_values sample: {Q_values[0].item():.6f}")
@@ -161,7 +146,6 @@ class Game:
                     
                 step += 1
             
-            # Print progress every 100 episodes
             if epoch % 100 == 0 and epoch > 0:
                 avg_score = sum(scores[-100:]) / 100
                 avg_loss = sum(losses[-100:]) / len(losses[-100:]) if losses else 0
@@ -174,7 +158,6 @@ class Game:
                 print(f"Epsilon: {epsilon:.4f}")
                 print(f"Buffer Size: {len(buffer)}")
                 print(f"Best Score: {max(scores) if scores else 0}")
-                # log aggregated metrics for this epoch
                 wandb.log({
                     "avg_score": avg_score,
                     "avg_reward": avg_reward,
@@ -186,15 +169,13 @@ class Game:
                 torch.save(buffer, "Data/Buffer.pth")
             
             
-            # After episode ends, reset for next episode
             
             env.reset()       
-        # finished training loop, close wandb run if available
         try:
             wandb_run.finish()
         except Exception:
             pass
 
 if __name__ == "__main__":
-    game = Game()  # יצירת אובייקט של המשחק
-    game.train()  # התחלת המשחק
+    game = Game()
+    game.train()

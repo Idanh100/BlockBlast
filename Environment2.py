@@ -33,7 +33,6 @@ class Environment:
         self.last_move_valid = False
 
     def all_shapes(self):
-        """Generate all possible block shapes for the game."""
         return BLOCK_SHAPES
     
     def reset(self):
@@ -95,7 +94,6 @@ class Environment:
         self.check_and_explode_rows(state)
         self.check_and_generate_blocks()
         reward = self.reward()
-        # (no per-turn print here)
         return reward
 
     def Get_Reward_Args(self, state: State, action: tuple):
@@ -123,36 +121,18 @@ class Environment:
         count = self.count_squares_of_block(shape)
 
     def count_ones_per_row_col(self, state: State):
-        """
-        Count how many occupied cells (non-zero) exist in each row and each
-        column of the board, print the counts for every row and column, and
-        return the counts.
-
-        Args:
-            state (State): The game state containing `Board` as a numpy array.
-
-        Returns:
-            tuple: (row_counts, col_counts) where each is a list of integers.
-        """
         board = state.Board
-        # Ensure board is a numpy array
         board_arr = np.array(board)
-
-        # Count occupied cells (non-zero) per row and per column
         row_counts = np.sum(board_arr != 0, axis=1).tolist()
         col_counts = np.sum(board_arr != 0, axis=0).tolist()
-
         return row_counts, col_counts
 
     def sum_ones_in_affected_rows_cols(self, state: State, block: Block, position: tuple) -> int:
-        # Use count_ones_per_row_col to get per-row and per-column counts,
-        # then sum those counts for rows and columns that the shape spans.
         shape_arr = np.array(getattr(block, 'shape', []))
 
         h, w = shape_arr.shape
         grid_x, grid_y = position
 
-        # compute the row/column indices covered by the shape (clamped to board)
         board = np.array(state.Board)
         min_y = max(0, grid_y)
         min_x = max(0, grid_x)
@@ -164,35 +144,26 @@ class Environment:
 
         row_counts, col_counts = self.count_ones_per_row_col(state)
 
-        # sum counts for affected rows and columns
         total_rows = sum(row_counts[r] for r in range(min_y, max_y) if 0 <= r < len(row_counts))
         total_cols = sum(col_counts[c] for c in range(min_x, max_x) if 0 <= c < len(col_counts))
 
-        total = int(total_rows + total_cols) - self.count_squares_of_block(block.shape) * 2  # subtract the block's own cells
+        total = int(total_rows + total_cols) - self.count_squares_of_block(block.shape) * 2
         return total
 
     def is_valid_move(self, state: State, block: Block, position: tuple) -> bool:
-        """
-        Check if placing the block at the given position is a valid move.
-        """
         board = state.Board
         grid_x, grid_y = position
 
-        # Support both Block and SimpleNamespace-like objects that carry a `shape` attribute
         shape = getattr(block, 'shape', None)
         if shape is None:
             return False
 
-        # Convert shape to numpy array for fast, vectorized checks
         shape_arr = np.array(shape)
         h, w = shape_arr.shape
 
-        # Quick boundary check: shape must fully fit inside the board at the given position
         if grid_x < 0 or grid_y < 0 or (grid_x + w) > board.shape[1] or (grid_y + h) > board.shape[0]:
             return False
 
-        # Extract the corresponding board slice and check overlap by elementwise multiply.
-        # If any product is non-zero then an occupied cell would overlap the shape -> invalid.
         board_slice = board[grid_y:grid_y + h, grid_x:grid_x + w]
         if np.any(board_slice * shape_arr != 0):
             return False
