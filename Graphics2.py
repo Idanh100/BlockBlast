@@ -248,7 +248,7 @@ class Graphics:
                     self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
                     self.GRID_SIZE - 1.5 * self.GRID_MARGIN
                 )
-                pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
+                pygame.draw.rect(self.screen, COLOR_GOLD, rect, border_radius=5)
 
         for col in cols_to_highlight:
             for row in range(temp_board.shape[0]):
@@ -265,7 +265,7 @@ class Graphics:
                     self.GRID_SIZE - 1.5 * self.GRID_MARGIN,
                     self.GRID_SIZE - 1.5 * self.GRID_MARGIN
                 )
-                pygame.draw.rect(self.screen, self.GOLD_COLOR, rect, border_radius=5)
+                pygame.draw.rect(self.screen, COLOR_GOLD, rect, border_radius=5)
 
     def _draw_combo_animation(self, state):
         if state.in_combo and state.combo_count >= 2:
