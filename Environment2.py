@@ -69,7 +69,6 @@ class Environment:
         if self.is_valid_move(state, block, (grid_x, grid_y)):
             filled_count = self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y))
             self.fix_block_to_board(state, block, (grid_x, grid_y))
-            self.print_block_squares(block.shape)  # כרגע רק מחשב את כמות התאים
 
             num_expl = self.check_and_explode_rows(state)  # בודק ומנקה שורות/עמודות מלאות
             self.num_explosions = num_expl
@@ -80,11 +79,11 @@ class Environment:
             self.last_move_valid = False
             self.num_explosions = 0
 
-        self.check_and_generate_blocks()  # אם אין בלוקים — צור חדשים
-        return filled_count  # מחזיר כמה תאים מולאו על-ידי המהלך
+        self.check_and_generate_blocks()  # אם אין בלוקים - צור חדשים
+        return filled_count  # מחזיר כמה תאים מולאו על ידי המהלך
 
     def Get_Reward_Args(self, state: State, action: tuple):
-        # אם המהלך האחרון לא היה חוקי — תגמול הוא 0
+        # אם המהלך האחרון לא היה חוקי התגמול יהיה 0
         if not self.last_move_valid:
             return 0
 
@@ -97,28 +96,22 @@ class Environment:
         return reward
 
     def Get_Reward(self, state, block, grid_x, grid_y):
-        # חישוב תגמול מבוסס על גודל הבלוק, התאמת שורות/עמודות ופיצוצים
-        reward = self.count_squares_of_block(block.shape) * self.REWARD_SQUARES_PER_BLOCK
-        reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y)) * self.REWARD_SQUARES_IN_SAME_ROW_OR_COL
-        reward += self.num_explosions * self.REWARD_EXPLODE
+        reward = self.count_squares_of_block(block.shape) * self.REWARD_SQUARES_PER_BLOCK # כמות המשבצות של הבלוק
+        reward += self.sum_ones_in_affected_rows_cols(state, block, (grid_x, grid_y)) * self.REWARD_SQUARES_IN_SAME_ROW_OR_COL # כמות המשבצות באותן שורות ועמודות
+        reward += self.num_explosions * self.REWARD_EXPLODE # כמות הפיצוצים
         return reward
 
     def count_squares_of_block(self, shape):
-        return sum(sum(row) for row in shape)  # סוכם מספר התאים הפעילים בצורת הבלוק
+        return sum(sum(row) for row in shape)  # סוכם את מספר המשבצות של הבלוק
 
-    def print_block_squares(self, shape):
-        # בשלב זה רק מחשב את מספר התאים; אפשר להדפיס או ללוג בעת פיתוח
-        count = self.count_squares_of_block(shape)
-
-    def count_ones_per_row_col(self, state: State):
+    def count_ones_per_row_col(self, state: State): # מחזיר את כמות המשבצות המלאות בכל השורות ובכל העמודות
         board = state.Board
         board_arr = np.array(board)
-        # משתמש ב-numpy לחישוב כמות התאים המלאים בכל שורה/עמודה
         row_counts = np.sum(board_arr != 0, axis=1).tolist()
         col_counts = np.sum(board_arr != 0, axis=0).tolist()
         return row_counts, col_counts
 
-    def sum_ones_in_affected_rows_cols(self, state: State, block: Block, position: tuple) -> int:
+    def sum_ones_in_affected_rows_cols(self, state: State, block: Block, position: tuple) -> int: # מחזיר את כמות המשבצות המלאות באותם שורות ועמודות בהן מונח הבלוק
         shape_arr = np.array(getattr(block, 'shape', []))
 
         h, w = shape_arr.shape
@@ -133,14 +126,13 @@ class Environment:
         if min_y >= max_y or min_x >= max_x:
             return 0
 
-        row_counts, col_counts = self.count_ones_per_row_col(state)
+        row_counts, col_counts = self.count_ones_per_row_col(state) # כמות המשבצות המלאות בכל שורה ועמודה לפני שמניחים את הבלוק
 
-        # סכום התאים המלאים באזור שהבלוק ישפיע עליו (שורות + עמודות)
+        # סכום המשבצות המלאות באותן שורות ועמודות בהן מונח הבלוק
         total_rows = sum(row_counts[r] for r in range(min_y, max_y) if 0 <= r < len(row_counts))
         total_cols = sum(col_counts[c] for c in range(min_x, max_x) if 0 <= c < len(col_counts))
 
-        # חיסור כדי לא לספור את תאי הבלוק עצמו פעמיים (בשורה ובעמודה)
-        total = int(total_rows + total_cols) - self.count_squares_of_block(block.shape) * 2
+        total = int(total_rows + total_cols) - self.count_squares_of_block(block.shape) * 2 # מפחיתים את המשבצות של הבלוק עצמו פעמיים כי הן נספרות בשורות וגם בעמודות
         return total
 
     def is_valid_move(self, state: State, block: Block, position: tuple) -> bool:  # בודק האם המהלך חוקי
@@ -154,51 +146,50 @@ class Environment:
         shape_arr = np.array(shape)
         h, w = shape_arr.shape
 
-        # בדיקת גבולות — ודא שהצורה נכנסת ללוח
+        # בדיקת גבולות - בודק אם הבלוק נכנס ללוח
         if grid_x < 0 or grid_y < 0 or (grid_x + w) > board.shape[1] or (grid_y + h) > board.shape[0]:
             return False
 
-        # בדיקת התנגשות — האם יש חפיפה בין הלוח לצורת הבלוק
+        # בודק שהבלוק מונח על משבצות ריקות
         board_slice = board[grid_y:grid_y + h, grid_x:grid_x + w]
         if np.any(board_slice * shape_arr != 0):
             return False
 
         return True
 
-    def fix_block_to_board(self, state: State, block: Block, position: tuple):
+    def fix_block_to_board(self, state: State, block: Block, position: tuple): # מקבע את הבלוק ללוח
         board = state.Board
         grid_x, grid_y = position
         placed_cells = 0
 
-        # הצמדת הבלוק ללוח — מילוי תאים בצבע הבלוק
+        # הלולאה שמניחה את הבלוק על הלוח ומעדכנת את מצב הלוח
         for y, row in enumerate(block.shape):
             for x, cell in enumerate(row):
                 if cell == 1:
                     board_x = grid_x + x
                     board_y = grid_y + y
-                    # בדיקה להגנה בגבולות הלוח
+                    # בודק שהבלוק בתוך גבולות הלוח
                     if 0 <= board_x < len(board[0]) and 0 <= board_y < len(board):
                         board[board_y][board_x] = block.color_id
                         placed_cells += 1
 
-        state.score += placed_cells  # עדכון ציון לפי מספר תאים שמולאו
+        state.score += placed_cells  # נותן נקודה על כל משבצת שהונחה
 
-        # הסרת הבלוק מרשימת הבלוקים הזמינים אם הוא הוצב
+        # הסרת הבלוק מרשימת הבלוקים הזמינים אם הוא הונח
         if block in state.Blocks:
             state.Blocks.remove(block)
 
-    def check_and_generate_blocks(self):
-        # יצירת בלוקים חדשים אם אין בלוקים זמינים
+    def check_and_generate_blocks(self): # בודק אם אין בלוקים זמינים ומייצר חדשים אם צריך 
         if not self.state.Blocks:
             self.set_random_block()
 
-    def check_and_explode_rows(self, state: State):
+    def check_and_explode_rows(self, state: State): # בודק אם יש שורות או עמודות מלאות, מפוצץ אותן ומחזיר כמה פיצוצים היו
         board = state.Board
-        # איתור שורות ועמודות מלאות לפיצוץ
+        # מחפש שורות ועמודות מלאות לפיצוץ
         rows_to_explode = [y for y in range(board.shape[0]) if all(board[y, :] != 0)]
         cols_to_explode = [x for x in range(board.shape[1]) if all(board[:, x] != 0)]
 
-        # ניקוי השורות/עמודות שנמצאו
+        # ניקוי השורות והעמודות שנמצאו
         for row in rows_to_explode:
             board[row, :] = 0
 
@@ -206,15 +197,14 @@ class Environment:
             board[:, col] = 0
 
         num_explosions = len(rows_to_explode) + len(cols_to_explode)
+        # קומבו
         if num_explosions > 0:
             state.turns_since_last_explosion = 0
-            # עדכון קומבו — אם כבר בקומבו מוסיפים, אחרת מאתחלים
             if state.in_combo:
                 state.combo_count += num_explosions
             else:
                 state.combo_count = num_explosions
 
-            # מתן נקודות נוספות לפי גודל הקומבו
             for i in range(num_explosions):
                 state.score += (state.combo_count + i) * 10
 
@@ -227,23 +217,23 @@ class Environment:
                 state.combo_count = 0
         return num_explosions
 
-    def is_game_over(self, state: State) -> bool:
+    def is_game_over(self, state: State) -> bool: # בודק אם יש מהלך חוקי אחד לפחות, אם לא, המשחק נגמר
         board = state.Board
         for block in state.Blocks:
             for y in range(len(board)):
                 for x in range(len(board[0])):
-                    # אם נמצא מהלך חוקי אחד — המשחק לא נגמר
+                    # אם נמצא מהלך חוקי אחד, המשחק לא נגמר
                     if self.is_valid_move(state, block, (x, y)):
                         return False
         print("Game Over! Score:", state.score)
         return True
 
-    def GetAllPossibleMoves(self, state: State):
+    def GetAllPossibleMoves(self, state: State): # מחזיר את כל המהלכים החוקיים עבור המצב הנוכחי לכל הבלוקים במ
         board = state.Board
         shapes = self.all_shapes()
         legal_moves = []
 
-        for name, shape in shapes.items():
+        for name, shape in shapes.items(): # בודק חוקיות מהלך של כל בלוק בכל מקום אפשרי בלוח
             shape_h = len(shape)
             shape_w = len(shape[0]) if shape_h > 0 else 0
 
@@ -261,7 +251,7 @@ class Environment:
 
         return tuple(legal_moves)
 
-    def AfterState(self, state: State, moves):
+    def AfterState(self, state: State, moves): # מחזיר את כל המצבים שנוצרים לאחר ביצוע כל המהלכים החוקיים
         resulting_states = []
         for mv in moves:
             try:
@@ -286,13 +276,11 @@ class Environment:
 
         return resulting_states
 
-    def tensor_shape(self, shape):
-        # המרה ל-tensor לצורך חישובים ב-PyTorch
+    def tensor_shape(self, shape): # Tensorל PyTorchהמרה מ
         shape_T = torch.tensor(shape, dtype=torch.float32)
         return shape_T
 
-    def GetAllAfterStates(self, state):
-        # מחזיר את כל המצבים האפשריים אחרי מהלכים חוקיים
+    def GetAllAfterStates(self, state): # מחזיר את כל המצבים האפשריים אחרי כל המהלכים החוקיים
         all_moves = self.GetAllPossibleMoves(state)
         all_after_states = self.AfterState(state, all_moves)
         return tuple(all_after_states)
