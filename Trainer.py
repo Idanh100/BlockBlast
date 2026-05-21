@@ -164,6 +164,9 @@ class Game:
                     "avg_loss": avg_loss,
                     "epsilon": epsilon,
                     "best_score": max(scores) if scores else 0,
+                    "REWARD_EXPLODE": REWARD_EXPLODE,
+                    "REWARD_SQUARES_PER_BLOCK": REWARD_SQUARES_PER_BLOCK,
+                    "REWARD_SQUARES_IN_SAME_ROW_OR_COL": REWARD_SQUARES_IN_SAME_ROW_OR_COL
                 })
                 torch.save(player.model.state_dict(), Model_Path)
                 torch.save(buffer, "Data/Buffer.pth")

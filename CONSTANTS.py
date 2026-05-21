@@ -82,7 +82,7 @@ LR_SCHEDULER_GAMMA = 0.5  # Multiply learning rate by this value
 DATA_DIRECTORY = "Data/"
 MODEL_PATH_TEMPLATE = f"{DATA_DIRECTORY}Model{{}}.ptn"  # Use with .format(model_number)
 BUFFER_PATH_TEMPLATE = f"{DATA_DIRECTORY}Train{{}}.ptn"  # Use with .format(model_number)
-DEFAULT_MODEL_NUMBER = 21
+DEFAULT_MODEL_NUMBER = 24
 
 # ==================== WANDB SETTINGS ====================
 # Weights & Biases logging configuration
