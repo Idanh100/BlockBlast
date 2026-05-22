@@ -1,5 +1,3 @@
-import random
-
 class Block:
     def __init__(self, shape, rect, color_id):
         self.shape = shape  # הצורה של הבלוק

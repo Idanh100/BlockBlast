@@ -5,7 +5,6 @@ import random
 from State2 import State
 from Environment2 import Environment
 from Model import DQN
-from Block import Block
 from CONSTANTS import *
 
 class Ai_Agent:

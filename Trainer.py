@@ -15,7 +15,6 @@ class Game:
     def train(self):
         graphics = Graphics()
         env = Environment(State())  # יצירת הסביבה עם מצב התחלתי
-        run = True
         num = DEFAULT_MODEL_NUMBER  # מספר המודל
         Buffer_Path = BUFFER_PATH_TEMPLATE.format(num)  # Bufferנתיב לשמירת ה
         Model_Path = MODEL_PATH_TEMPLATE.format(num)  # נתיב לשמירת המודל
@@ -24,7 +23,6 @@ class Game:
         player_hat = Ai_Agent()  # מודל יעד (target network)
         player_hat.model.load_state_dict(player.model.state_dict())  # העתקת פרמטרים למודל היעד
         batch_size = BATCH_SIZE  # גודל אוסף החוויות לאימון
-        best_score = 0  # הציון הטוב ביותר
         buffer = ReplayBuffer(path=None)  # יוצר Buffer חדש לצורך שמירת חוויות במהלך האימון
         learning_rate = LEARNING_RATE  # שיעור למידה לשיפועי האופטימייזר
         epochs = NUM_EPOCHS  # מספר חזרות על לולאת האימון

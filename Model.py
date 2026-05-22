@@ -1,4 +1,3 @@
-import pygame
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -46,7 +45,6 @@ class DQN(nn.Module):
         # שמקבלת את הפיצ'רים מהשכבה הקודמת
         # ומפיקה ערך קיו יחיד עבור כל מצב
         self.fc3 = nn.Linear(64, 1)  # 64 -> 1 (Q-value output)
-
 
 
         self.env = Environment(State())  # יצירת סביבה עם מצב התחלתי

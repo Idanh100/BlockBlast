@@ -5,7 +5,6 @@ import numpy as np
 from types import SimpleNamespace
 from Block import Block
 from State2 import State
-from Graphics2 import Graphics
 import torch
 from CONSTANTS import *
 

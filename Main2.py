@@ -4,7 +4,6 @@ from State2 import State
 from Environment2 import Environment
 from HumanAgent2 import HumanAgent
 from Ai_Agent2 import Ai_Agent
-import os
 from CONSTANTS import *
 
 class Game:
@@ -25,7 +24,6 @@ class Game:
 
         # פותח תפריט ראשי ומגדיר את מצב השחקן לפי מה שהמשתמש בוחר
         menu_action = self.main_menu(graphics)
-        current_mode = menu_action
         if menu_action == "QUIT":
             run = False
         elif menu_action == "PLAY":
@@ -69,7 +67,6 @@ class Game:
                         elif main_menu_button.collidepoint(mouse_x, mouse_y):
                             # חזרה לתפריט הראשי ובחירה מחודשת של מצב המשחק
                             menu_action = self.main_menu(graphics)
-                            current_mode = menu_action
                             if menu_action == "QUIT":
                                 run = False
                             elif menu_action == "PLAY":

@@ -15,7 +15,7 @@ class State:
         tensor_state = torch.tensor(Board, dtype=torch.float32)        
         return tensor_state
     
-    def copy(self): # יוצר עותק מדויק של המצב הנוכחי
+    def copy(self): # יוצר עותק מדויק של המצב הנוכחי 
         return copy.deepcopy(self)
         
 
