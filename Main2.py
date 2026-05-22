@@ -33,7 +33,7 @@ class Game:
             player = HumanAgent()
         elif menu_action == "AI_PLAY":
             # CONSTANTSשחקן בינה מלאכותית - נטען מודל של מספר שמור ב
-            player = Ai_Agent(train=False)
+            player = Ai_Agent(train=False) # תפריט ראשי
             player.load_model(MODEL_PATH_TEMPLATE.format(DEFAULT_MODEL_NUMBER))
 
         env.reset()
@@ -78,7 +78,7 @@ class Game:
                                 state = env.state
                                 game_over = False
                             elif menu_action == "AI_PLAY":
-                                player = Ai_Agent(train=False)
+                                player = Ai_Agent(train=False) # אחרי משחק
                                 player.load_model(MODEL_PATH_TEMPLATE.format(DEFAULT_MODEL_NUMBER))
                                 env.reset()
                                 state = env.state

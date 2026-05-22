@@ -56,7 +56,7 @@ class Environment:
             new_block.initial_position = rect.copy()
             blocks_lst.append(new_block)
 
-        state.Blocks = set(blocks_lst)  # הבלוקים נשמרים במבנה סט כדי למנוע כפילויות
+        state.Blocks = set(blocks_lst)  # הבלוקים נשמרים במבנה סט בשביל למנוע כפילויות
 
     def move(self, state: State, action: tuple):
         block, position = action
@@ -244,7 +244,7 @@ class Environment:
 
             for y in range(0, max_y + 1):
                 for x in range(0, max_x + 1):
-                    # משתמש ב-dummy object כדי לבדוק חוקיות מיקום עבור צורה נתונה
+                    # משתמש ב-dummy object בשביל לבדוק חוקיות מיקום עבור צורה נתונה
                     dummy = SimpleNamespace(shape=shape)
                     if self.is_valid_move(state, dummy, (x, y)):
                         legal_moves.append((name, shape, (x, y)))

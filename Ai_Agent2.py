@@ -23,16 +23,17 @@ class Ai_Agent:
         self.env = Environment(State())
         self.train = train
         
+    # חישוב Q לערכי מצבים ופעולות
     def Q (self, states, actions):
         Q_values = self.model(states)
         return Q_values
-
+    
+    # מחשב את ערכי הקיו של כל המצבים ובוחר את הפעולה הכי טובה
     def get_Actions_Values(self, next_states):
         with torch.no_grad():
             q_values = self.model(next_states)
         best_actions = torch.argmax(q_values, dim=1, keepdim=True)
         return best_actions, q_values
-
 
     def get_action (self, state, events=None, epoch=0):
         action, _ = self.get_action_train(state, epoch)
@@ -45,10 +46,8 @@ class Ai_Agent:
         if self.train and random.random() < self.get_epsilon(epoch):
             best_idx = random.randint(0, len(moves) - 1)
             best_move = moves[best_idx]
-            return self.move_to_action(best_move),  after_state_tensors[best_idx] 
-
+            return self.move_to_action(best_move),  after_state_tensors[best_idx]   
         
-
         with torch.no_grad():
             q_values = self.model(after_state_tensors)
 
@@ -59,8 +58,6 @@ class Ai_Agent:
         test = action, best_after_state_tensor
         return action, best_after_state_tensor
       
-        
-    
     def get_all_moves (self, state):
         moves = []
         for block in state.Blocks:
@@ -100,7 +97,6 @@ class Ai_Agent:
     
     def move_to_action (self, best_move):
         block, (grid_x, grid_y) = best_move
-            
 
         pixel_x = self.GRID_ORIGIN_X + grid_x * self.GRID_SIZE
         pixel_y = self.GRID_ORIGIN_Y + grid_y * self.GRID_SIZE

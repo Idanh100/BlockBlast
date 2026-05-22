@@ -2,10 +2,10 @@ import random
 
 class Block:
     def __init__(self, shape, rect, color_id):
-        self.shape = shape
-        self.rect = rect
-        self.color_id = color_id
-        self.initial_position = rect.copy()
+        self.shape = shape  # הצורה של הבלוק
+        self.rect = rect  # מיקום וגודל
+        self.color_id = color_id  # צבע
+        self.initial_position = rect.copy()  # המיקום ההתחלתי של הבלוק 
         
         RED = (220, 70, 70)
         YELLOW = (240, 200, 50)
